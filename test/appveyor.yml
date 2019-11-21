@@ -38,6 +38,10 @@ environment:
       TOOLSET: msvc-14.1
       CXXSTD: 14,17
       ADDRMD: 32,64
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      TOOLSET: msvc-14.2
+      CXXSTD: 14,17,latest  # latest is C++2a
+      ADDRMD: 32,64
     # TODO: Clang 32bit job yields:
     # LINK : fatal error LNK1171: unable to load mspdbcore.dll (error code: 126)
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
