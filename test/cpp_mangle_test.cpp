@@ -113,8 +113,7 @@ int main(int argc, char* argv[])
     BOOST_TEST(!var2.empty());
 #endif
 
-// TODO: FIX!
-#ifndef BOOST_TRAVISCI_BUILD
+#ifndef BOOST_NO_RTTI
 
 #if defined(_MSC_VER) // MSVC, Clang-cl, and ICC on Windows
     auto vtable = ms.get_vtable<override_class>();
@@ -124,7 +123,7 @@ int main(int argc, char* argv[])
     BOOST_TEST(!ti.empty());
 #endif
 
-#endif // #ifndef BOOST_TRAVISCI_BUILD
+#endif // #ifndef BOOST_NO_RTTI
 
     return boost::report_errors();
 }
