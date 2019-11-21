@@ -17,7 +17,7 @@
 #include <boost/dll/detail/aggressive_ptr_cast.hpp>
 #include <boost/dll/detail/get_mem_fn_type.hpp>
 
-#if defined(BOOST_MSVC) || defined(BOOST_MSVC_VER)
+#if defined(BOOST_MSVC)
 #   include <boost/dll/detail/demangling/msvc.hpp>
 #else
 #   include <boost/dll/detail/demangling/itanium.hpp>
@@ -117,7 +117,7 @@ struct destructor {
     {}
 };
 
-#if defined(BOOST_MSVC) || defined(BOOST_MSVC_VER)
+#if defined(BOOST_MSVC)
 template<typename Signature, typename Lib>
 constructor<Signature> load_ctor(Lib & lib, const mangled_storage_impl::ctor_sym & ct) {
     typedef typename constructor<Signature>::standard_t standard_t;

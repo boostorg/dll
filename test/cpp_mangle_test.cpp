@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
 // TODO: FIX!
 #ifndef BOOST_TRAVISCI_BUILD
 
-#if defined(BOOST_MSVC) || defined(BOOST_MSVC_VER)
+#if defined(BOOST_MSVC)
     auto vtable = ms.get_vtable<override_class>();
     BOOST_TEST(!vtable.empty());
 #else
