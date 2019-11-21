@@ -32,7 +32,7 @@ skip_tags: true
 
 environment:
   matrix:
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       TOOLSET: msvc-9.0,msvc-10.0,msvc-11.0,msvc-12.0
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       TOOLSET: msvc-14.1
@@ -46,19 +46,19 @@ environment:
       ADDRMD: 64
       
     # TODO: Both Cygwins have problems with <link.h> and `dladdr`
-    #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+    #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
     #  ADDPATH: C:\cygwin\bin;
     #  TOOLSET: gcc
     #  CXXSTD: 03,11,14,1z
-    #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+    #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
     #  ADDPATH: C:\cygwin64\bin;
     #  TOOLSET: gcc
     #  CXXSTD: 03,11,14,1z
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       ADDPATH: C:\mingw\bin;
       TOOLSET: gcc
       CXXSTD: 03,11,14,1z
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       ADDPATH: C:\mingw-w64\x86_64-7.2.0-posix-seh-rt_v5-rev1\mingw64\bin;
       TOOLSET: gcc
       CXXSTD: 03,11,14,1z
