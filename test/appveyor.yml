@@ -78,7 +78,8 @@ before_build:
     - python tools/boostdep/depinst/depinst.py --git_args "--depth 10 --jobs 2" %BOOST_LIBS_FOLDER%
 
 build_script:
-    - cmd /c bootstrap
+    - bootstrap.bat --with-toolset=msvc
+      || ( echo === bootstrap.log === && cat bootstrap.log && exit /b 1 )
     - b2.exe headers
     - cd %BOOST%/libs/%BOOST_LIBS_FOLDER%/test
 

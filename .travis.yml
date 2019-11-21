@@ -123,6 +123,7 @@ before_install:
 
   # Adding missing toolsets and preparing Boost headers
   - ./bootstrap.sh
+    || ( echo === bootstrap.log === ; cat bootstrap.log ; exit 1 ; )
   - ./b2 headers
   - |-
     echo "using gcc ;" >> ~/user-config.jam
