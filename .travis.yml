@@ -16,6 +16,10 @@ os: linux
 
 env:
   global:
+    # Autodetect Boost branch by using the following code: - BOOST_BRANCH=$TRAVIS_BRANCH
+    # or just directly specify it
+    - BOOST_BRANCH=develop && [ "$TRAVIS_BRANCH" == "master" ] && BOOST_BRANCH=master || true
+
     # Files, which coverage results must be ignored (files from other projects).
     # Example: - IGNORE_COVERAGE='*/boost/progress.hpp */filesystem/src/*'
     - IGNORE_COVERAGE='*/detail/pe_info.hpp */detail/macho_info.hpp */filesystem/src/*'
@@ -105,21 +109,6 @@ addons:
     - python-yaml
 
 before_install:
-  - |
-    # Determining the root branch
-    if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then
-      export BOOST_BRANCH=$TRAVIS_BRANCH
-    else
-      # It is a pull request. Retrieve the base branch from GitHub
-      GH_PR_API=https://api.github.com/repos/$TRAVIS_REPO_SLUG/pulls/$TRAVIS_PULL_REQUEST
-      export BOOST_BRANCH=`curl -s $GH_PR_API | jq -r .head.ref`;
-    fi
-    if [[ ! "$BOOST_BRANCH" =~ ^(master|develop)$ ]]; then
-      # Travis has been triggered not from our main branches.
-      export BOOST_BRANCH=develop
-    fi
-    echo Root branch is $BRANCH
-
   # Cloning minimal set of Boost libraries
   - BOOST=$HOME/boost-local
   - git clone -b $BOOST_BRANCH --depth 10 https://github.com/boostorg/boost.git $BOOST
@@ -134,8 +123,7 @@ before_install:
   - git status
 
   # Adding missing toolsets and preparing Boost headers
-  - ./bootstrap.sh
-    || ( echo === bootstrap.log === ; cat bootstrap.log ; exit 1 ; )
+  - ./bootstrap.sh || ( echo === bootstrap.log === ; cat bootstrap.log ; exit 1 ; )
   - ./b2 headers
   - |-
     echo "using gcc ;" >> ~/user-config.jam
