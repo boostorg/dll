@@ -48,6 +48,10 @@ environment:
       TOOLSET: clang-win
       CXXSTD: 14,17
       ADDRMD: 64
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      TOOLSET: clang-win
+      CXXSTD: 14,17,2a
+      ADDRMD: 32,64
       
     # TODO: Both Cygwins have problems with <link.h> and `dladdr`
     #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
@@ -94,7 +98,7 @@ test_script:
   - if not "%CXXSTD%" == "" set CXXSTD=cxxstd=%CXXSTD%
   - if not "%ADDRMD%" == "" set ADDRMD=address-model=%ADDRMD%
   - echo "Running command ..\..\..\b2 -j3 toolset=%TOOLSET% %CXXSTD% %ADDRMD% variant=debug,release"
-  - ..\..\..\b2.exe -j3 toolset=%TOOLSET% %CXXSTD% %ADDRMD% variant=debug,release cxxflags="-DBOOST_TRAVISCI_BUILD"
+  - ..\..\..\b2.exe -j3 toolset=%TOOLSET% %CXXSTD% %ADDRMD% variant=debug,release cxxflags="-DBOOST_TRAVISCI_BUILD" embed-manifest=off
 
 after_test:
 on_success:
