@@ -278,7 +278,7 @@ public:
         ret.reserve(symbols.size());
         for (std::size_t i = 0; i < symbols.size(); ++i) {
             if (is_visible(symbols[i]) && symbols[i].st_name < text.size()) {
-                ret.push_back(&text[symbols[i].st_name]);
+                ret.emplace_back(text.begin() + symbols[i].st_name, text.end());
                 if (ret.back().empty()) {
                     ret.pop_back(); // Do not show empty names
                 }
@@ -325,7 +325,7 @@ public:
 
         for (std::size_t i = 0; i < symbols.size(); ++i) {
             if (symbols[i].st_shndx == index && is_visible(symbols[i]) && symbols[i].st_name < text.size()) {
-                ret.push_back(&text[symbols[i].st_name]);
+                ret.emplace_back(text.begin() + symbols[i].st_name, text.end());
                 if (ret.back().empty()) {
                     ret.pop_back(); // Do not show empty names
                 }
