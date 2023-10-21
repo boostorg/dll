@@ -28,6 +28,7 @@ project
    : source-location .
    : requirements
       [ requires cxx11_rvalue_references ]
+      [ requires cxx11_static_assert ]
    # linux
       <target-os>linux:<linkflags>"-ldl"
       <toolset>gcc:<cxxflags>"-Wall -Wextra -pedantic -Wno-long-long"
