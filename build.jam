@@ -5,29 +5,32 @@
 
 require-b2 5.2 ;
 
+constant boost_dependencies :
+    /boost/assert//boost_assert
+    /boost/config//boost_config
+    /boost/core//boost_core
+    /boost/filesystem//boost_filesystem
+    /boost/function//boost_function
+    /boost/move//boost_move
+    /boost/predef//boost_predef
+    /boost/smart_ptr//boost_smart_ptr
+    /boost/spirit//boost_spirit
+    /boost/system//boost_system
+    /boost/throw_exception//boost_throw_exception
+    /boost/type_index//boost_type_index
+    /boost/type_traits//boost_type_traits
+    /boost/winapi//boost_winapi ;
+
 project /boost/dll
     : common-requirements
-        <library>/boost/assert//boost_assert
-        <library>/boost/config//boost_config
-        <library>/boost/core//boost_core
-        <library>/boost/filesystem//boost_filesystem
-        <library>/boost/function//boost_function
-        <library>/boost/move//boost_move
-        <library>/boost/predef//boost_predef
-        <library>/boost/smart_ptr//boost_smart_ptr
-        <library>/boost/spirit//boost_spirit
-        <library>/boost/system//boost_system
-        <library>/boost/throw_exception//boost_throw_exception
-        <library>/boost/type_index//boost_type_index
-        <library>/boost/type_traits//boost_type_traits
-        <library>/boost/winapi//boost_winapi
         <include>include
     ;
 
 explicit
-    [ alias boost_dll ]
+    [ alias boost_dll : : : : <library>$(boost_dependencies) ]
     [ alias all : boost_dll test ]
     ;
 
 call-if : boost-library dll
     ;
+
