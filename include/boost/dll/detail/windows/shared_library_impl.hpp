@@ -61,7 +61,7 @@ public:
         unload();
 
         if (!sl.is_absolute() && !(native_mode & load_mode::search_system_folders)) {
-            std::error_code current_path_ec;
+            boost::dll::fs::error_code current_path_ec;
             boost::dll::fs::path prog_loc = boost::dll::fs::current_path(current_path_ec);
 
             if (!current_path_ec) {
@@ -138,7 +138,7 @@ public:
             // `GetProcAddress` could not be called for libraries loaded with
             // `LOAD_LIBRARY_AS_DATAFILE`, `LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE`
             // or `LOAD_LIBRARY_AS_IMAGE_RESOURCE`.
-            ec = boost::dll::fs::make_error_code(
+            ec = std::make_error_code(
                 std::errc::operation_not_supported
             );
 
