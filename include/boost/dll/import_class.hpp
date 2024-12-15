@@ -260,15 +260,13 @@ inline std::unique_ptr<T, detail::deleter<T>> imported_class<T>::make_data(const
 
     if (!ctor.has_allocating() || !dtor.has_deleting())
     {
-        boost::dll::fs::error_code ec;
-
-        ec = boost::dll::fs::make_error_code(
-            boost::dll::fs::errc::bad_file_descriptor
+        std::error_code ec = std::make_error_code(
+            std::errc::bad_file_descriptor
         );
 
         // report_error() calls dlsym, do not use it here!
         boost::throw_exception(
-            boost::dll::fs::system_error(
+            std::system_error(
                 ec, "boost::dll::detail::make_data() failed: no allocating ctor or dtor was found"
             )
         );
@@ -289,15 +287,13 @@ inline std::unique_ptr<T, detail::deleter<T>> imported_class<T>::make_data(const
 
     if (!ctor.has_standard() || !dtor.has_standard())
     {
-        boost::dll::fs::error_code ec;
-
-        ec = boost::dll::fs::make_error_code(
-            boost::dll::fs::errc::bad_file_descriptor
+        std::error_code ec = std::make_error_code(
+            std::errc::bad_file_descriptor
         );
 
         // report_error() calls dlsym, do not use it here!
         boost::throw_exception(
-            boost::dll::fs::system_error(
+            std::system_error(
                 ec, "boost::dll::detail::make_data() failed: no regular ctor or dtor was found"
             )
         );

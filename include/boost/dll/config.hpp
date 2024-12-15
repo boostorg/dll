@@ -30,15 +30,12 @@ using path = std::conditional_t<BOOST_DLL_USE_STD_FS, std::filesystem::path, boo
 /// boost::system::error_code otherwise.
 using error_code = std::conditional_t<BOOST_DLL_USE_STD_FS, std::error_code, boost::system::error_code>;
 
-/// Alias to `std::system_error` if \forcedmacrolink{BOOST_DLL_USE_STD_FS} is defined by user.
-/// Alias to `boost::system::system_error` otherwise.
-using system_error = std::conditional_t<BOOST_DLL_USE_STD_FS, std::system_error, boost::system::system_error>;
-
 }}}
 
 #endif
 
 #include <system_error>
+
 
 #ifdef BOOST_DLL_USE_STD_FS
 #include <filesystem>
@@ -46,12 +43,7 @@ using system_error = std::conditional_t<BOOST_DLL_USE_STD_FS, std::system_error,
 namespace boost { namespace dll { namespace fs {
 
 using namespace std::filesystem;
-
 using std::error_code;
-using std::system_error;
-using std::make_error_code;
-using std::errc;
-using std::system_category;
 
 }}}
 
@@ -60,17 +52,11 @@ using std::system_category;
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/system/error_code.hpp>
-#include <boost/system/system_error.hpp>
 
 namespace boost { namespace dll { namespace fs {
 
 using namespace boost::filesystem;
-
 using boost::system::error_code;
-using boost::system::system_error;
-using boost::system::errc::make_error_code;
-namespace errc = boost::system::errc;
-using boost::system::system_category;
 
 }}}
 

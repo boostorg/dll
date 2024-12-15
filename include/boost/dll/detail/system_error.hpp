@@ -29,12 +29,12 @@ namespace boost { namespace dll { namespace detail {
 #endif
     }
 
-    inline void report_error(const boost::dll::fs::error_code& ec, const char* message) {
+    inline void report_error(const std::error_code& ec, const char* message) {
 #if !BOOST_OS_WINDOWS
         const char* const error_txt = dlerror();
         if (error_txt) {
             boost::throw_exception(
-                boost::dll::fs::system_error(
+                std::system_error(
                     ec,
                     message + std::string(" (dlerror system message: ") + error_txt + std::string(")")
                 )
@@ -43,7 +43,7 @@ namespace boost { namespace dll { namespace detail {
 #endif
 
         boost::throw_exception(
-            boost::dll::fs::system_error(
+            std::system_error(
                 ec, message
             )
         );
