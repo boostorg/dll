@@ -23,7 +23,7 @@ namespace boost { namespace dll { namespace detail {
         boost::winapi::DWORD_ err = boost::winapi::GetLastError();
         return std::error_code(
             static_cast<int>(err),
-            boost::dll::fs::system_category()
+            std::system_category()
         );
     }
 
