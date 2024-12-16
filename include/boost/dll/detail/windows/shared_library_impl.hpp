@@ -55,7 +55,7 @@ public:
         return actual_path;
     }
 
-    void load(boost::dll::fs::path sl, load_mode::type portable_mode, boost::dll::fs::error_code &ec) {
+    void load(boost::dll::fs::path sl, load_mode::type portable_mode, std::error_code &ec) {
         typedef boost::winapi::DWORD_ native_mode_t;
         native_mode_t native_mode = static_cast<native_mode_t>(portable_mode);
         unload();
