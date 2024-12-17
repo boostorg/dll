@@ -126,7 +126,7 @@ namespace parser
         return s;
     }
 
-    boost::core::string_view trim_prefix(boost::core::string_view s, boost::core::string_view prefix) {
+    inline boost::core::string_view trim_prefix(boost::core::string_view s, boost::core::string_view prefix) {
         if (s.starts_with(prefix)) {
             s.remove_prefix(prefix.size());
         }
@@ -367,6 +367,39 @@ namespace parser
         }
     };
 
+    template<typename T>
+    struct is_variable_with_name {
+        const std::string variable_name;
+        const mangled_storage_impl& ms;
+
+        inline bool operator()(boost::core::string_view s) const {
+            {
+                const auto visibility_pos = parser::find_visibility(s);
+                if (visibility_pos != std::string::npos) {
+                    s.remove_prefix(visibility_pos);
+                    s = trim_prefix(s, " static ");
+                }
+            }
+            {
+                const auto type_pos = parser::find_type<T>(ms, s);
+                if (type_pos == std::string::npos) {
+                    return std::string::npos;
+                }
+                s.remove_prefix(type_pos);
+            }
+
+            if (!s.starts_with(variable_name)) {
+                return false;
+            }
+            s.remove_prefix(variable_name.size());
+            return s.empty();
+        }
+
+        inline bool operator()(const mangled_storage_base::entry& e) const {
+            return (*this)(boost::core::string_view(e.demangled.data(), e.demangled.size()));
+        }
+    };
+
     template <class Signature>
     struct is_constructor_with_name {
         const std::string ctor_name;
@@ -423,33 +456,9 @@ namespace parser
 }
 
 
-template<typename T> std::string mangled_storage_impl::get_variable(const std::string &name) const
-{
-    using namespace std;
-    using namespace boost;
-
-    namespace x3 = spirit::x3;
-    using namespace parser;
-
-    auto type_name = get_name<T>();
-
-    auto matcher =
-            -(visibility >> static_ >> x3::space) >> //it may be a static class-member
-            parser::type_rule<T>(type_name) >> x3::space >>
-            name;
-
-    auto predicate = [&](const mangled_storage_base::entry & e)
-        {
-            if (e.demangled == name)//maybe not mangled,
-                return true;
-
-            auto itr = e.demangled.begin();
-            auto end = e.demangled.end();
-            auto res = x3::parse(itr, end, matcher);
-            return res && (itr == end);
-        };
-
-    auto found = std::find_if(storage_.begin(), storage_.end(), predicate);
+template<typename T>
+std::string mangled_storage_impl::get_variable(const std::string &name) const {
+    const auto found = std::find_if(storage_.begin(), storage_.end(), parser::is_variable_with_name<T>{name});
 
     if (found != storage_.end())
         return found->mangled;

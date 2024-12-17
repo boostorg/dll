@@ -76,6 +76,27 @@ int main(int argc, char* argv[])
             ("private: __cdecl some_space::some_class::some_class(int,int)")
     ));
 
+
+    BOOST_TEST((
+        parser::is_variable_with_name<int>{"some_space::some_class::value", ms}
+            ("public: static int some_space::some_class::value")
+    ));
+
+    BOOST_TEST((
+        parser::is_variable_with_name<int>{"some_space::some_class::value", ms}
+            ("int some_space::some_class::value")
+    ));
+
+    BOOST_TEST((
+        parser::is_variable_with_name<double>{"some_space::variable", ms}
+            ("public: static int some_space::variable")
+    ));
+
+    BOOST_TEST((
+        parser::is_variable_with_name<const double>{"unscoped_c_var", ms}
+            ("double const unscoped_c_var")
+    ));
+
     return boost::report_errors();
 }
 #else
