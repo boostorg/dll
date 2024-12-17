@@ -108,6 +108,15 @@ int main(int argc, char* argv[])
             ("void __cdecl overloaded(double)")
     ));
 
+    BOOST_TEST((
+        parser::is_mem_fn_with_name<volatile int, int(*)(int,int)>("func", ms)
+            ("public: int __thiscall int::func(int,int)volatile ")
+    ));
+    BOOST_TEST((
+        parser::is_mem_fn_with_name<const volatile int, double(*)(double)>("func", ms)
+            ("private: double __thiscall int::func(double)const volatile ")
+    ));
+
     return boost::report_errors();
 }
 #else
