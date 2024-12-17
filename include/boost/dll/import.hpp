@@ -84,7 +84,7 @@ namespace detail {
 * \b Examples:
 *
 * \code
-* boost::function<int(int)> f = import_symbol<int(int)>("test_lib.so", "integer_func_name");
+* std::function<int(int)> f = import_symbol<int(int)>("test_lib.so", "integer_func_name");
 *
 * auto f_cpp11 = import_symbol<int(int)>("test_lib.so", "integer_func_name");
 * \endcode
@@ -171,7 +171,7 @@ BOOST_DLL_IMPORT_RESULT_TYPE import_symbol(shared_library&& lib, const std::stri
 * \b Examples:
 *
 * \code
-* boost::function<int(int)> f = import_alias<int(int)>("test_lib.so", "integer_func_alias_name");
+* std::function<int(int)> f = import_alias<int(int)>("test_lib.so", "integer_func_alias_name");
 *
 * auto f_cpp11 = import_alias<int(int)>("test_lib.so", "integer_func_alias_name");
 * \endcode

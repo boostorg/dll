@@ -10,13 +10,13 @@
 
 //[plugcpp_on_unload
 #include <boost/dll/alias.hpp> // for BOOST_DLL_ALIAS
-#include <boost/function.hpp>
+#include <functional>
 #include <vector>
 
 namespace my_namespace {
 
 struct on_unload {
-    using callback_t = boost::function<void()> ;
+    using callback_t = std::function<void()> ;
     using this_type = on_unload;
 
     ~on_unload() {
