@@ -126,6 +126,13 @@ namespace parser
         return s;
     }
 
+    boost::core::string_view trim_prefix(boost::core::string_view s, boost::core::string_view prefix) {
+        if (s.starts_with(prefix)) {
+            s.remove_prefix(prefix.size());
+        }
+        return s;
+    }
+
     auto const visibility = ("public:" | x3::lit("protected:") | "private:");
     inline std::string::size_type find_visibility(boost::core::string_view s) {
         if (s.starts_with("public:")) {
@@ -201,6 +208,49 @@ namespace parser
     template<>
     inline auto type_rule<void>(const std::string &) { return x3::string("void"); };
 
+    template<typename T>
+    std::string::size_type find_type(const mangled_storage_impl& ms, boost::core::string_view s_orig) {
+        if (std::is_void<T>::value) {
+            if (s_orig.starts_with("void")) {
+                return sizeof("void") - 1;
+            }
+            return std::string::npos;
+        }
+
+        auto s = s_orig;
+        s = trim_prefix(s, "class ");
+        s = trim_prefix(s, "struct ");
+
+        const auto& mangled_name = ms.get_name<T>();
+        if (!s.starts_with(mangled_name)) {
+            return std::string::npos;
+        }
+        s.remove_prefix(mangled_name.size());
+
+        if (std::is_const<T>::value && !s.starts_with(" const")) {
+            return std::string::npos;
+        }
+        s.remove_prefix(sizeof(" const") - 1);
+
+        if (std::is_volatile<T>::value && !s.starts_with(" volatile")) {
+            return std::string::npos;
+        }
+        s.remove_prefix(sizeof(" volatile") - 1);
+
+        if (std::is_rvalue_reference<T>::value && !s.starts_with(" &&")) {
+            return std::string::npos;
+        }
+        s.remove_prefix(sizeof(" &&") - 1);
+
+        if (std::is_lvalue_reference<T>::value && !s.starts_with(" &")) {
+            return std::string::npos;
+        }
+        s.remove_prefix(sizeof(" &") - 1);
+
+        s = trim_ptrs(s);
+        return s_orig.size() - s.size();
+    }
+
     auto const cdecl_   = "__cdecl"     >> x3::space;
     auto const stdcall  = "__stdcall"     >> x3::space;
 #if defined(_WIN64)//seems to be necessary by msvc 14-x64
@@ -209,15 +259,11 @@ namespace parser
     auto const thiscall = "__thiscall"     >> x3::space;
 #endif
     inline std::string::size_type find_thiscall(boost::core::string_view s) {
-#if defined(_WIN64)//seems to be necessary by msvc 14-x64
-        if (s.starts_with(" __cdecl ")) {
+        if (s.starts_with(" __cdecl ")) {               // Win 64bit
             return sizeof(" __cdecl ") - 1;
-        }
-#else
-        if (s.starts_with(" __thiscall ")) {
+        } else if (s.starts_with(" __thiscall ")) {     // Win 32bit
             return sizeof(" __thiscall ") - 1;
         }
-#endif
         return std::string::npos;
     }
 
@@ -257,6 +303,7 @@ namespace parser
                     return false;
                 }
             }
+            s = trim_prefix(s, " virtual");
             {
                 // cdecl declaration for methods. stdcall cannot be
                 const auto thiscall_pos = find_thiscall(s);
@@ -443,7 +490,6 @@ auto mangled_storage_impl::get_constructor() const -> ctor_sym
 template<typename Class>
 auto mangled_storage_impl::get_destructor() const -> dtor_sym
 {
-    namespace x3 = spirit::x3;
     using namespace parser;
     std::string dtor_name; // = class_name + "::" + name;
     std::string unscoped_cname; //the unscoped class-name
@@ -462,8 +508,7 @@ auto mangled_storage_impl::get_destructor() const -> dtor_sym
         }
     }
 
-    auto found = std::find_if(storage_.begin(), storage_.end(), is_destructor_with_name{dtor_name});
-
+    const auto found = std::find_if(storage_.begin(), storage_.end(), is_destructor_with_name{dtor_name});
 
     if (found != storage_.end())
         return found->mangled;
