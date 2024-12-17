@@ -333,8 +333,11 @@ namespace parser
         return parser::find_type<void>(ms, s);
     }
 
-    struct is_destructor_with_name {
-        const std::string dtor_name;
+    class is_destructor_with_name {
+        const std::string dtor_name_;
+
+    public:
+        explicit is_destructor_with_name(std::string dtor_name) : dtor_name_(std::move(dtor_name)) {}
 
         inline bool operator()(boost::core::string_view s) const {
             {
@@ -354,10 +357,10 @@ namespace parser
                 s.remove_prefix(thiscall_pos);
             }
 
-            if (!s.starts_with(dtor_name)) {
+            if (!s.starts_with(dtor_name_)) {
                 return false;
             }
-            s.remove_prefix(dtor_name.size());
+            s.remove_prefix(dtor_name_.size());
             s = parser::trim_ptrs(s);
             return s.empty();
         }
@@ -368,9 +371,13 @@ namespace parser
     };
 
     template<typename T>
-    struct is_variable_with_name {
-        const std::string variable_name;
-        const mangled_storage_impl& ms;
+    class is_variable_with_name {
+        const std::string variable_name_;
+        const mangled_storage_impl& ms_;
+
+    public:
+        is_variable_with_name(std::string variable_name, const mangled_storage_impl& ms)
+            : variable_name_(std::move(variable_name)), ms_(ms) {}
 
         inline bool operator()(boost::core::string_view s) const {
             {
@@ -381,17 +388,17 @@ namespace parser
                 }
             }
             {
-                const auto type_pos = parser::find_type<T>(ms, s);
+                const auto type_pos = parser::find_type<T>(ms_, s);
                 if (type_pos == std::string::npos) {
                     return std::string::npos;
                 }
                 s.remove_prefix(type_pos);
             }
 
-            if (!s.starts_with(variable_name)) {
+            if (!s.starts_with(variable_name_)) {
                 return false;
             }
-            s.remove_prefix(variable_name.size());
+            s.remove_prefix(variable_name_.size());
             return s.empty();
         }
 
@@ -401,9 +408,13 @@ namespace parser
     };
 
     template <class Signature>
-    struct is_constructor_with_name {
-        const std::string ctor_name;
-        const mangled_storage_impl& ms;
+    class is_constructor_with_name {
+        const std::string ctor_name_;
+        const mangled_storage_impl& ms_;
+
+    public:
+        is_constructor_with_name(std::string ctor_name, const mangled_storage_impl& ms)
+            : ctor_name_(std::move(ctor_name)), ms_(ms) {}
 
         inline bool operator()(boost::core::string_view s) const {
             {
@@ -422,10 +433,10 @@ namespace parser
                 s.remove_prefix(thiscall_pos);
             }
 
-            if (!s.starts_with(ctor_name)) {
+            if (!s.starts_with(ctor_name_)) {
                 return false;
             }
-            s.remove_prefix(ctor_name.size());
+            s.remove_prefix(ctor_name_.size());
 
             if (!s.starts_with("(")) {
                 return false;
@@ -433,7 +444,7 @@ namespace parser
             s.remove_prefix(1);
 
             {
-                const auto arg_list_pos = parser::find_arg_list(ms, s, Signature());
+                const auto arg_list_pos = parser::find_arg_list(ms_, s, Signature());
                 if (arg_list_pos == std::string::npos) {
                     return false;
                 }

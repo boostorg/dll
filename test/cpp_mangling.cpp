@@ -15,33 +15,33 @@ int main(int argc, char* argv[])
 {
     namespace parser = boost::dll::detail::parser;
 
-    BOOST_TEST(parser::is_destructor_with_name{"foo::~foo(void)"}("public: __cdecl foo::~foo(void)"));
-    BOOST_TEST(parser::is_destructor_with_name{"foo::~foo(void)"}("private: __cdecl foo::~foo(void)"));
-    BOOST_TEST(parser::is_destructor_with_name{"foo::~foo(void)"}("protected: __cdecl foo::~foo(void)"));
+    BOOST_TEST(parser::is_destructor_with_name("foo::~foo(void)")("public: __cdecl foo::~foo(void)"));
+    BOOST_TEST(parser::is_destructor_with_name("foo::~foo(void)")("private: __cdecl foo::~foo(void)"));
+    BOOST_TEST(parser::is_destructor_with_name("foo::~foo(void)")("protected: __cdecl foo::~foo(void)"));
 
-    BOOST_TEST(parser::is_destructor_with_name{"foo::~foo(void)"}("public: virtual __cdecl foo::~foo(void)"));
-    BOOST_TEST(parser::is_destructor_with_name{"foo::~foo(void)"}("private: virtual __cdecl foo::~foo(void)"));
-    BOOST_TEST(parser::is_destructor_with_name{"foo::~foo(void)"}("protected: virtual __cdecl foo::~foo(void)"));
+    BOOST_TEST(parser::is_destructor_with_name("foo::~foo(void)")("public: virtual __cdecl foo::~foo(void)"));
+    BOOST_TEST(parser::is_destructor_with_name("foo::~foo(void)")("private: virtual __cdecl foo::~foo(void)"));
+    BOOST_TEST(parser::is_destructor_with_name("foo::~foo(void)")("protected: virtual __cdecl foo::~foo(void)"));
 
-    BOOST_TEST(parser::is_destructor_with_name{"foo::~foo(void)"}("public: __cdecl foo::~foo(void) __ptr64"));
-    BOOST_TEST(parser::is_destructor_with_name{"foo::~foo(void)"}("private: __cdecl foo::~foo(void) __ptr64"));
-    BOOST_TEST(parser::is_destructor_with_name{"foo::~foo(void)"}("protected: __cdecl foo::~foo(void) __ptr64"));
+    BOOST_TEST(parser::is_destructor_with_name("foo::~foo(void)")("public: __cdecl foo::~foo(void) __ptr64"));
+    BOOST_TEST(parser::is_destructor_with_name("foo::~foo(void)")("private: __cdecl foo::~foo(void) __ptr64"));
+    BOOST_TEST(parser::is_destructor_with_name("foo::~foo(void)")("protected: __cdecl foo::~foo(void) __ptr64"));
 
-    BOOST_TEST(parser::is_destructor_with_name{"some_space::some_father::~some_father(void)"}("public: __cdecl some_space::some_father::~some_father(void) __ptr64"));
+    BOOST_TEST(parser::is_destructor_with_name("some_space::some_father::~some_father(void)")("public: __cdecl some_space::some_father::~some_father(void) __ptr64"));
 
-    BOOST_TEST(parser::is_destructor_with_name{"foo::~foo(void)"}("public: __thiscall foo::~foo(void)"));
-    BOOST_TEST(parser::is_destructor_with_name{"foo::~foo(void)"}("private: __thiscall foo::~foo(void)"));
-    BOOST_TEST(parser::is_destructor_with_name{"foo::~foo(void)"}("protected: __thiscall foo::~foo(void)"));
+    BOOST_TEST(parser::is_destructor_with_name("foo::~foo(void)")("public: __thiscall foo::~foo(void)"));
+    BOOST_TEST(parser::is_destructor_with_name("foo::~foo(void)")("private: __thiscall foo::~foo(void)"));
+    BOOST_TEST(parser::is_destructor_with_name("foo::~foo(void)")("protected: __thiscall foo::~foo(void)"));
 
-    BOOST_TEST(parser::is_destructor_with_name{"foo::~foo(void)"}("public: virtual __thiscall foo::~foo(void)"));
-    BOOST_TEST(parser::is_destructor_with_name{"foo::~foo(void)"}("private: virtual __thiscall foo::~foo(void)"));
-    BOOST_TEST(parser::is_destructor_with_name{"foo::~foo(void)"}("protected: virtual __thiscall foo::~foo(void)"));
+    BOOST_TEST(parser::is_destructor_with_name("foo::~foo(void)")("public: virtual __thiscall foo::~foo(void)"));
+    BOOST_TEST(parser::is_destructor_with_name("foo::~foo(void)")("private: virtual __thiscall foo::~foo(void)"));
+    BOOST_TEST(parser::is_destructor_with_name("foo::~foo(void)")("protected: virtual __thiscall foo::~foo(void)"));
 
-    BOOST_TEST(parser::is_destructor_with_name{"foo::~foo(void)"}("public: __thiscall foo::~foo(void) __ptr32"));
-    BOOST_TEST(parser::is_destructor_with_name{"foo::~foo(void)"}("private: __thiscall foo::~foo(void) __ptr32"));
-    BOOST_TEST(parser::is_destructor_with_name{"foo::~foo(void)"}("protected: __thiscall foo::~foo(void)  __ptr32"));
+    BOOST_TEST(parser::is_destructor_with_name("foo::~foo(void)")("public: __thiscall foo::~foo(void) __ptr32"));
+    BOOST_TEST(parser::is_destructor_with_name("foo::~foo(void)")("private: __thiscall foo::~foo(void) __ptr32"));
+    BOOST_TEST(parser::is_destructor_with_name("foo::~foo(void)")("protected: __thiscall foo::~foo(void)  __ptr32"));
 
-    BOOST_TEST(parser::is_destructor_with_name{"some_space::some_father::~some_father(void)"}("public: __thiscall some_space::some_father::~some_father(void) __ptr64"));
+    BOOST_TEST(parser::is_destructor_with_name("some_space::some_father::~some_father(void)")("public: __thiscall some_space::some_father::~some_father(void) __ptr64"));
 
 
     boost::dll::detail::mangled_storage_impl ms;
@@ -64,36 +64,36 @@ int main(int argc, char* argv[])
 
 
     BOOST_TEST((
-        parser::is_constructor_with_name<void(*)()>{"some_space::some_class::some_class", ms}
+        parser::is_constructor_with_name<void(*)()>("some_space::some_class::some_class", ms)
             ("public: __cdecl some_space::some_class::some_class(void) __ptr64")
     ));
     BOOST_TEST((
-        parser::is_constructor_with_name<void(*)(int)>{"some_space::some_class::some_class", ms}
+        parser::is_constructor_with_name<void(*)(int)>("some_space::some_class::some_class", ms)
             ("private: __cdecl some_space::some_class::some_class(int)")
     ));
     BOOST_TEST((
-        parser::is_constructor_with_name<void(*)(int,int)>{"some_space::some_class::some_class", ms}
+        parser::is_constructor_with_name<void(*)(int,int)>("some_space::some_class::some_class", ms)
             ("private: __cdecl some_space::some_class::some_class(int,int)")
     ));
 
 
     BOOST_TEST((
-        parser::is_variable_with_name<int>{"some_space::some_class::value", ms}
+        parser::is_variable_with_name<int>("some_space::some_class::value", ms)
             ("public: static int some_space::some_class::value")
     ));
 
     BOOST_TEST((
-        parser::is_variable_with_name<int>{"some_space::some_class::value", ms}
+        parser::is_variable_with_name<int>("some_space::some_class::value", ms)
             ("int some_space::some_class::value")
     ));
 
     BOOST_TEST((
-        parser::is_variable_with_name<double>{"some_space::variable", ms}
+        parser::is_variable_with_name<double>("some_space::variable", ms)
             ("public: static int some_space::variable")
     ));
 
     BOOST_TEST((
-        parser::is_variable_with_name<const double>{"unscoped_c_var", ms}
+        parser::is_variable_with_name<const double>("unscoped_c_var", ms)
             ("double const unscoped_c_var")
     ));
 
