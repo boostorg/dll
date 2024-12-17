@@ -111,29 +111,17 @@ namespace parser {
         return s;
     }
 
-    inline std::string::size_type find_visibility(boost::core::string_view s) {
+    inline bool consume_visibility(boost::core::string_view& s) {
         if (s.starts_with("public:")) {
-            return sizeof("public:") - 1;
+            s.remove_prefix(sizeof("public:") - 1);
         } else if (s.starts_with("protected:")) {
-            return sizeof("protected:") - 1;
+            s.remove_prefix(sizeof("protected:") - 1);
         } else if (s.starts_with("private:")) {
-            return sizeof("private:") - 1;
+            s.remove_prefix(sizeof("private:") - 1);
+        } else {
+            return false;
         }
-        return std::string::npos;
-    }
-
-    inline std::string::size_type find_virtual(boost::core::string_view s) {
-        if (s.starts_with(" virtual")) {
-            return sizeof(" virtual") - 1;
-        }
-        return std::string::npos;
-    }
-
-    inline std::string::size_type find_static(boost::core::string_view s) {
-        if (s.starts_with(" static")) {
-            return sizeof(" static") - 1;
-        }
-        return std::string::npos;
+        return true;
     }
 
     template<typename T>
@@ -191,13 +179,17 @@ namespace parser {
         return s_orig.size() - s.size();
     }
 
-    inline std::string::size_type find_thiscall(boost::core::string_view s) {
-        if (s.starts_with(" __cdecl ")) {               // Win 64bit
-            return sizeof(" __cdecl ") - 1;
-        } else if (s.starts_with(" __thiscall ")) {     // Win 32bit
-            return sizeof(" __thiscall ") - 1;
+    inline bool consume_thiscall(boost::core::string_view& s) {
+        if (s.starts_with(" ")) s.remove_prefix(1);
+
+        if (s.starts_with("__cdecl ")) {               // Win 64bit
+            s.remove_prefix(sizeof("__cdecl ") - 1);
+            return true;
+        } else if (s.starts_with("__thiscall ")) {     // Win 32bit
+            s.remove_prefix(sizeof("__thiscall ") - 1);
+            return true;
         }
-        return std::string::npos;
+        return false;
     }
 
     template<typename Return, typename Arg>
@@ -242,23 +234,15 @@ namespace parser {
             : dtor_name_(dtor_name) {}
 
         inline bool operator()(boost::core::string_view s) const {
-            {
-                const auto visibility_pos = parser::find_visibility(s);
-                if (visibility_pos == std::string::npos) {
-                    return false;
-                }
-                s.remove_prefix(visibility_pos);
+            if (!parser::consume_visibility(s)) {
+                return false;
             }
             s = trim_prefix(s, " virtual");
-            {
-                // cdecl declaration for methods. stdcall cannot be
-                const auto thiscall_pos = parser::find_thiscall(s);
-                if (thiscall_pos == std::string::npos) {
-                    return false;
-                }
-                s.remove_prefix(thiscall_pos);
+        
+            if (!parser::consume_thiscall(s)) {
+                return false;
             }
-
+        
             if (!s.starts_with(dtor_name_)) {
                 return false;
             }
@@ -282,12 +266,8 @@ namespace parser {
             : variable_name_(variable_name), ms_(ms) {}
 
         inline bool operator()(boost::core::string_view s) const {
-            {
-                const auto visibility_pos = parser::find_visibility(s);
-                if (visibility_pos != std::string::npos) {
-                    s.remove_prefix(visibility_pos);
-                    s = parser::trim_prefix(s, " static ");
-                }
+            if (parser::consume_visibility(s)) {
+                s = parser::trim_prefix(s, " static ");
             }
             {
                 const auto type_pos = parser::find_type<T>(ms_, s);
@@ -319,20 +299,11 @@ namespace parser {
             : ctor_name_(ctor_name), ms_(ms) {}
 
         inline bool operator()(boost::core::string_view s) const {
-            {
-                const auto visibility_pos = parser::find_visibility(s);
-                if (visibility_pos == std::string::npos) {
-                    return false;
-                }
-                s.remove_prefix(visibility_pos);
+            if (!parser::consume_visibility(s)) {
+                return false;
             }
-            {
-                // cdecl declaration for methods. stdcall cannot be
-                const auto thiscall_pos = parser::find_thiscall(s);
-                if (thiscall_pos == std::string::npos) {
-                    return false;
-                }
-                s.remove_prefix(thiscall_pos);
+            if (!parser::consume_thiscall(s)) {
+                return false;
             }
 
             if (!s.starts_with(ctor_name_)) {
@@ -380,12 +351,8 @@ namespace parser {
             : function_name_(function_name), ms_(ms) {}
 
         inline bool operator()(boost::core::string_view s) const {
-            {
-                const auto visibility_pos = parser::find_visibility(s);
-                if (visibility_pos != std::string::npos) {
-                    s.remove_prefix(visibility_pos);
-                    s = trim_prefix(s, " static ");
-                }
+            if (parser::consume_visibility(s)) {
+                s = trim_prefix(s, " static ");
             }
             {
                 const auto type_pos = parser::find_type<Result>(ms_, s);
@@ -454,12 +421,8 @@ namespace parser {
             : function_name_(function_name), ms_(ms) {}
 
         inline bool operator()(boost::core::string_view s) const {
-            {
-                const auto visibility_pos = parser::find_visibility(s);
-                if (visibility_pos == std::string::npos) {
-                    return false;
-                }
-                s.remove_prefix(visibility_pos);
+            if (!parser::consume_visibility(s)) {
+                return false;
             }
             s = trim_prefix(s, " virtual");
 
@@ -475,12 +438,9 @@ namespace parser {
                 }
                 s.remove_prefix(type_pos);
             }
-
-            if (!s.starts_with("__thiscall ")) {
+            if (!parser::consume_thiscall(s)) {
                 return false;
             }
-            s.remove_prefix(sizeof("__thiscall ") - 1);
-
             {
                 const auto type_pos = parser::find_type<typename std::remove_cv<Class>::type>(ms_, s);
                 if (type_pos == std::string::npos) {

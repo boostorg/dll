@@ -128,6 +128,16 @@ int main(int argc, char* argv[])
             ("private: double __thiscall int::func(double)const volatile ")
     ));
 
+    BOOST_TEST((
+        parser::is_mem_fn_with_name<volatile int, int(*)(int,int)>("func", ms)
+            ("public: int __cdecl int::func(int,int)volatile __ptr64")
+    ));
+
+    BOOST_TEST((
+        parser::is_mem_fn_with_name<volatile int, int(*)(int,int)>("func", ms)
+            ("public: virtual int __cdecl int::func(int,int)volatile __ptr64")
+    ));
+
     return boost::report_errors();
 }
 #else
