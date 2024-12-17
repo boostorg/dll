@@ -110,7 +110,7 @@ namespace parser
     }
 
     inline boost::core::string_view trim_ptrs(boost::core::string_view s) {
-        bool retry = false; 
+        bool retry = false;
         do {
             retry = false;
             while (s.starts_with(" ")) {
@@ -227,25 +227,37 @@ namespace parser
         }
         s.remove_prefix(mangled_name.size());
 
-        if (std::is_const<T>::value && !s.starts_with(" const")) {
-            return std::string::npos;
+        if (std::is_const<T>::value) {
+            if (!s.starts_with(" const")) {
+                return std::string::npos;
+            } else {
+                s.remove_prefix(sizeof(" const") - 1);
+            }
         }
-        s.remove_prefix(sizeof(" const") - 1);
 
-        if (std::is_volatile<T>::value && !s.starts_with(" volatile")) {
-            return std::string::npos;
+        if (std::is_volatile<T>::value) {
+            if (!s.starts_with(" volatile")) {
+                return std::string::npos;
+            } else {
+                s.remove_prefix(sizeof(" volatile") - 1);
+            }
         }
-        s.remove_prefix(sizeof(" volatile") - 1);
 
-        if (std::is_rvalue_reference<T>::value && !s.starts_with(" &&")) {
-            return std::string::npos;
+        if (std::is_rvalue_reference<T>::value) {
+            if (!s.starts_with(" &&")) {
+                return std::string::npos;
+            } else {
+                s.remove_prefix(sizeof(" &&") - 1);
+            }
         }
-        s.remove_prefix(sizeof(" &&") - 1);
 
-        if (std::is_lvalue_reference<T>::value && !s.starts_with(" &")) {
-            return std::string::npos;
+        if (std::is_lvalue_reference<T>::value) {
+            if (!s.starts_with(" &")) {
+                return std::string::npos;
+            } else {
+                s.remove_prefix(sizeof(" &") - 1);
+            }
         }
-        s.remove_prefix(sizeof(" &") - 1);
 
         s = trim_ptrs(s);
         return s_orig.size() - s.size();
@@ -286,27 +298,56 @@ namespace parser
         return x3::string("void");
     }
 
+
+    template<typename Return, typename Arg>
+    std::string::size_type find_arg_list(const mangled_storage_impl& ms, boost::core::string_view s, Return (*)(Arg))
+    {
+        return parser::find_type<Arg>(ms, s);
+    }
+
+    template<typename Return, typename First, typename Second, typename ...Args>
+    std::string::size_type find_arg_list(const mangled_storage_impl & ms, boost::core::string_view s, Return (*)(First, Second, Args...))
+    {
+        using next_type = Return (*)(Second, Args...);
+
+        const auto res = parser::find_type<First>(ms, s);
+        if (res == std::string::npos) {
+            return std::string::npos;
+        }
+        s.remove_prefix(res);
+        if (!s.starts_with(",")) {
+            return std::string::npos;
+        }
+        s.remove_prefix(1);
+
+        const auto new_res = parser::find_arg_list(ms, s, next_type());
+        if (new_res == std::string::npos) {
+            return std::string::npos;
+        }
+
+        return res + 1 + new_res;
+    }
+
+    template<typename Return>
+    std::string::size_type find_arg_list(const mangled_storage_impl& ms, boost::core::string_view s, Return (*)()) {
+        return parser::find_type<void>(ms, s);
+    }
+
     struct is_destructor_with_name {
         const std::string dtor_name;
 
         inline bool operator()(boost::core::string_view s) const {
             {
-                const auto visibility_pos = find_visibility(s);
+                const auto visibility_pos = parser::find_visibility(s);
                 if (visibility_pos == std::string::npos) {
                     return false;
                 }
                 s.remove_prefix(visibility_pos);
             }
-            {
-                const auto virtual_pos = find_visibility(s);
-                if (virtual_pos != std::string::npos) {
-                    return false;
-                }
-            }
             s = trim_prefix(s, " virtual");
             {
                 // cdecl declaration for methods. stdcall cannot be
-                const auto thiscall_pos = find_thiscall(s);
+                const auto thiscall_pos = parser::find_thiscall(s);
                 if (thiscall_pos == std::string::npos) {
                     return false;
                 }
@@ -317,7 +358,61 @@ namespace parser
                 return false;
             }
             s.remove_prefix(dtor_name.size());
-            s = trim_ptrs(s);
+            s = parser::trim_ptrs(s);
+            return s.empty();
+        }
+
+        inline bool operator()(const mangled_storage_base::entry& e) const {
+            return (*this)(boost::core::string_view(e.demangled.data(), e.demangled.size()));
+        }
+    };
+
+    template <class Signature>
+    struct is_constructor_with_name {
+        const std::string ctor_name;
+        const mangled_storage_impl& ms;
+
+        inline bool operator()(boost::core::string_view s) const {
+            {
+                const auto visibility_pos = parser::find_visibility(s);
+                if (visibility_pos == std::string::npos) {
+                    return false;
+                }
+                s.remove_prefix(visibility_pos);
+            }
+            {
+                // cdecl declaration for methods. stdcall cannot be
+                const auto thiscall_pos = parser::find_thiscall(s);
+                if (thiscall_pos == std::string::npos) {
+                    return false;
+                }
+                s.remove_prefix(thiscall_pos);
+            }
+
+            if (!s.starts_with(ctor_name)) {
+                return false;
+            }
+            s.remove_prefix(ctor_name.size());
+
+            if (!s.starts_with("(")) {
+                return false;
+            }
+            s.remove_prefix(1);
+
+            {
+                const auto arg_list_pos = parser::find_arg_list(ms, s, Signature());
+                if (arg_list_pos == std::string::npos) {
+                    return false;
+                }
+                s.remove_prefix(arg_list_pos);
+            }
+
+            if (!s.starts_with(")")) {
+                return false;
+            }
+            s.remove_prefix(1);
+
+            s = parser::trim_ptrs(s);
             return s.empty();
         }
 
@@ -438,11 +533,7 @@ std::string mangled_storage_impl::get_mem_fn(const std::string &name) const
 
 
 template<typename Signature>
-auto mangled_storage_impl::get_constructor() const -> ctor_sym
-{
-    namespace x3 = spirit::x3;
-    using namespace parser;
-
+auto mangled_storage_impl::get_constructor() const -> ctor_sym {
     using func_type = Signature*;
 
 
@@ -463,23 +554,7 @@ auto mangled_storage_impl::get_constructor() const -> ctor_sym
         }
     }
 
-    auto matcher =
-                visibility >> x3::space >>
-                thiscall >> //cdecl declaration for methods. stdcall cannot be
-                ctor_name >>
-                x3::lit('(') >> parser::arg_list(*this, func_type()) >> x3::lit(')') >> parser::ptr_rule();
-
-
-    auto predicate = [&](const mangled_storage_base::entry & e)
-            {
-                auto itr = e.demangled.begin();
-                auto end = e.demangled.end();
-                auto res = x3::parse(itr, end, matcher);
-
-                return res && (itr == end);
-            };
-
-    auto f = std::find_if(storage_.begin(), storage_.end(), predicate);
+    const auto f = std::find_if(storage_.begin(), storage_.end(), parser::is_constructor_with_name<func_type>{ctor_name, *this});
 
     if (f != storage_.end())
         return f->mangled;

@@ -8,6 +8,7 @@
 
 #include <boost/core/lightweight_test.hpp>
 
+#if (__cplusplus > 201402L) || (defined(_MSVC_LANG) && _MSVC_LANG > 201402L)
 #include <boost/dll/detail/demangling/msvc.hpp>
 
 int main(int argc, char* argv[])
@@ -43,5 +44,40 @@ int main(int argc, char* argv[])
     BOOST_TEST(parser::is_destructor_with_name{"some_space::some_father::~some_father(void)"}("public: __thiscall some_space::some_father::~some_father(void) __ptr64"));
 
 
+    boost::dll::detail::mangled_storage_impl ms;
+    {
+        void(*ptr1)(int) = nullptr;
+        BOOST_TEST_EQ(parser::find_arg_list(ms, "int", ptr1), 3);
+    }
+    {
+        void(*ptr2)() = nullptr;
+        BOOST_TEST_EQ(parser::find_arg_list(ms, "void", ptr2), 4);
+    }
+    {
+        void(*ptr3)(int,int) = nullptr;
+        BOOST_TEST_EQ(parser::find_arg_list(ms, "int,int", ptr3), 7);
+    }
+    {
+        void(*ptr4)(int,short,long) = nullptr;
+        BOOST_TEST_EQ(parser::find_arg_list(ms, "int,short,long", ptr4), 14);
+    }
+
+
+    BOOST_TEST((
+        parser::is_constructor_with_name<void(*)()>{"some_space::some_class::some_class", ms}
+            ("public: __cdecl some_space::some_class::some_class(void) __ptr64")
+    ));
+    BOOST_TEST((
+        parser::is_constructor_with_name<void(*)(int)>{"some_space::some_class::some_class", ms}
+            ("private: __cdecl some_space::some_class::some_class(int)")
+    ));
+    BOOST_TEST((
+        parser::is_constructor_with_name<void(*)(int,int)>{"some_space::some_class::some_class", ms}
+            ("private: __cdecl some_space::some_class::some_class(int,int)")
+    ));
+
     return boost::report_errors();
 }
+#else
+int main() {return 0;}
+#endif
