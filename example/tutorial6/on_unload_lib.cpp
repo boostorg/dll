@@ -16,8 +16,8 @@
 namespace my_namespace {
 
 struct on_unload {
-    typedef boost::function<void()> callback_t;
-    typedef on_unload this_type;
+    using callback_t = boost::function<void()> ;
+    using this_type = on_unload;
 
     ~on_unload() {
         for (std::size_t i = 0; i < callbacks_.size(); ++i) {
