@@ -89,7 +89,12 @@ int main(int argc, char* argv[])
 
     BOOST_TEST((
         parser::is_variable_with_name<double>("some_space::variable", ms)
-            ("public: static int some_space::variable")
+            ("public: static double some_space::variable")
+    ));
+
+    BOOST_TEST((
+        !parser::is_variable_with_name<double>("some_space::variable", ms)
+            ("public: static int some_space::variable_that_is_not_exist")
     ));
 
     BOOST_TEST((
@@ -107,6 +112,12 @@ int main(int argc, char* argv[])
         parser::is_function_with_name<void(*)(double)>("overloaded", ms)
             ("void __cdecl overloaded(double)")
     ));
+
+    BOOST_TEST((
+        parser::is_function_with_name<const int&(*)()>("some_space::scoped_fun", ms)
+            ("int const & __ptr64 __cdecl some_space::scoped_fun(void)")
+    ));
+
 
     BOOST_TEST((
         parser::is_mem_fn_with_name<volatile int, int(*)(int,int)>("func", ms)

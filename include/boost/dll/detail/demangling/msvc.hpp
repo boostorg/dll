@@ -155,7 +155,7 @@ namespace parser {
         }
         s.remove_prefix(mangled_name.size());
 
-        if (std::is_const<T>::value) {
+        if (std::is_const<typename std::remove_reference<T>::type>::value) {
             if (!s.starts_with(" const")) {
                 return std::string::npos;
             } else {
@@ -163,7 +163,7 @@ namespace parser {
             }
         }
 
-        if (std::is_volatile<T>::value) {
+        if (std::is_volatile<typename std::remove_reference<T>::type>::value) {
             if (!s.starts_with(" volatile")) {
                 return std::string::npos;
             } else {
@@ -286,13 +286,13 @@ namespace parser {
                 const auto visibility_pos = parser::find_visibility(s);
                 if (visibility_pos != std::string::npos) {
                     s.remove_prefix(visibility_pos);
-                    s = trim_prefix(s, " static ");
+                    s = parser::trim_prefix(s, " static ");
                 }
             }
             {
                 const auto type_pos = parser::find_type<T>(ms_, s);
                 if (type_pos == std::string::npos) {
-                    return std::string::npos;
+                    return false;
                 }
                 s.remove_prefix(type_pos);
             }
@@ -390,21 +390,28 @@ namespace parser {
             {
                 const auto type_pos = parser::find_type<Result>(ms_, s);
                 if (type_pos == std::string::npos) {
+                    BOOST_ASSERT(false);
                     return false;
                 }
                 s.remove_prefix(type_pos);
             }
-            if (!s.starts_with(" __cdecl ")) {
+
+            if (s.starts_with(" ")) s.remove_prefix(1);
+            if (!s.starts_with("__cdecl ")) {
+                throw std::runtime_error(s);
+                    BOOST_ASSERT(false);
                 return false;
             }
-            s.remove_prefix(sizeof(" __cdecl ") - 1);
+            s.remove_prefix(sizeof("__cdecl ") - 1);
 
             if (!s.starts_with(function_name_)) {
+                    BOOST_ASSERT(false);
                 return false;
             }
             s.remove_prefix(function_name_.size());
 
             if (!s.starts_with("(")) {
+                    BOOST_ASSERT(false);
                 return false;
             }
             s.remove_prefix(1);
@@ -413,12 +420,14 @@ namespace parser {
                 using Signature = Result(*)(Args...);
                 const auto arg_list_pos = parser::find_arg_list(ms_, s, Signature());
                 if (arg_list_pos == std::string::npos) {
+                    BOOST_ASSERT(false);
                     return false;
                 }
                 s.remove_prefix(arg_list_pos);
             }
 
             if (!s.starts_with(")")) {
+                    BOOST_ASSERT(false);
                 return false;
             }
             s.remove_prefix(1);
