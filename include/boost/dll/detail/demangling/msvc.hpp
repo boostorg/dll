@@ -464,6 +464,71 @@ namespace parser
             return (*this)(boost::core::string_view(e.demangled.data(), e.demangled.size()));
         }
     };
+
+    template <class Signature>
+    class is_function_with_name;
+
+    template <class Result, class... Args>
+    class is_function_with_name<Result(*)(Args...)> {
+        const std::string function_name_;
+        const mangled_storage_impl& ms_;
+
+    public:
+        is_function_with_name(std::string function_name, const mangled_storage_impl& ms)
+            : function_name_(std::move(function_name)), ms_(ms) {}
+
+        inline bool operator()(boost::core::string_view s) const {
+            {
+                const auto visibility_pos = parser::find_visibility(s);
+                if (visibility_pos != std::string::npos) {
+                    s.remove_prefix(visibility_pos);
+                    s = trim_prefix(s, " static ");
+                }
+            }
+            {
+                const auto type_pos = parser::find_type<Result>(ms_, s);
+                if (type_pos == std::string::npos) {
+                    return false;
+                }
+                s.remove_prefix(type_pos);
+            }
+            if (!s.starts_with(" __cdecl ")) {
+                return false;
+            }
+            s.remove_prefix(sizeof(" __cdecl ") - 1);
+
+            if (!s.starts_with(function_name_)) {
+                return false;
+            }
+            s.remove_prefix(function_name_.size());
+
+            if (!s.starts_with("(")) {
+                return false;
+            }
+            s.remove_prefix(1);
+
+            {
+                using Signature = Result(*)(Args...);
+                const auto arg_list_pos = parser::find_arg_list(ms_, s, Signature());
+                if (arg_list_pos == std::string::npos) {
+                    return false;
+                }
+                s.remove_prefix(arg_list_pos);
+            }
+
+            if (!s.starts_with(")")) {
+                return false;
+            }
+            s.remove_prefix(1);
+
+            s = parser::trim_ptrs(s);
+            return s.empty();
+        }
+
+        inline bool operator()(const mangled_storage_base::entry& e) const {
+            return (*this)(boost::core::string_view(e.demangled.data(), e.demangled.size()));
+        }
+    };
 }
 
 

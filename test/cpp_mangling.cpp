@@ -97,6 +97,17 @@ int main(int argc, char* argv[])
             ("double const unscoped_c_var")
     ));
 
+
+    BOOST_TEST((
+        parser::is_function_with_name<void(*)(int)>("overloaded", ms)
+            ("void __cdecl overloaded(int)")
+    ));
+
+    BOOST_TEST((
+        parser::is_function_with_name<void(*)(double)>("overloaded", ms)
+            ("void __cdecl overloaded(double)")
+    ));
+
     return boost::report_errors();
 }
 #else
