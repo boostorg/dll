@@ -15,8 +15,6 @@
 #include <algorithm>
 #include <type_traits>
 
-#include <boost/spirit/home/x3.hpp>
-
 namespace boost { namespace dll { namespace detail {
 
 class mangled_storage_impl  : public mangled_storage_base
@@ -24,11 +22,6 @@ class mangled_storage_impl  : public mangled_storage_base
     template<typename T>
     struct dummy {};
 
-    template<typename Return, typename ...Args>
-    std::vector<std::string> get_func_params(dummy<Return(Args...)>) const
-    {
-        return {get_name<Args>()...};
-    }
     template<typename Return, typename ...Args>
     std::string get_return_type(dummy<Return(Args...)>) const
     {
@@ -92,22 +85,7 @@ void mangled_storage_impl::trim_typename(std::string & val)
 }
 
 
-namespace parser
-{
-    namespace x3 = spirit::x3;
-
-    inline auto ptr_rule_impl(std::integral_constant<std::size_t, 32>)
-    {
-        return -((-x3::space) >> "__ptr32");
-    }
-    inline auto ptr_rule_impl(std::integral_constant<std::size_t, 64>)
-    {
-        return -((-x3::space) >> "__ptr64");
-    }
-
-    inline auto ptr_rule() {
-        return ptr_rule_impl(std::integral_constant<std::size_t, sizeof(std::size_t)*8>());
-    }
+namespace parser {
 
     inline boost::core::string_view trim_ptrs(boost::core::string_view s) {
         bool retry = false;
@@ -133,7 +111,6 @@ namespace parser
         return s;
     }
 
-    auto const visibility = ("public:" | x3::lit("protected:") | "private:");
     inline std::string::size_type find_visibility(boost::core::string_view s) {
         if (s.starts_with("public:")) {
             return sizeof("public:") - 1;
@@ -145,7 +122,6 @@ namespace parser
         return std::string::npos;
     }
 
-    auto const virtual_ = x3::space >> "virtual";
     inline std::string::size_type find_virtual(boost::core::string_view s) {
         if (s.starts_with(" virtual")) {
             return sizeof(" virtual") - 1;
@@ -153,60 +129,12 @@ namespace parser
         return std::string::npos;
     }
 
-    auto const static_     = x3::space >> x3::lit("static") ;
     inline std::string::size_type find_static(boost::core::string_view s) {
         if (s.starts_with(" static")) {
             return sizeof(" static") - 1;
         }
         return std::string::npos;
     }
-
-    inline auto const_rule_impl(std::true_type )  {return x3::space >> "const";};
-    inline auto const_rule_impl(std::false_type)  {return x3::eps;};
-    template<typename T>
-    auto const_rule() {using t = std::is_const<typename std::remove_reference<T>::type>; return const_rule_impl(t());}
-
-    inline auto volatile_rule_impl(std::true_type )  {return x3::space >> "volatile";};
-    inline auto volatile_rule_impl(std::false_type)  {return x3::eps;};
-    template<typename T>
-    auto volatile_rule() {using t = std::is_volatile<typename std::remove_reference<T>::type>; return volatile_rule_impl(t());}
-
-
-    inline auto inv_const_rule_impl(std::true_type )  {return "const" >>  x3::space ;};
-    inline auto inv_const_rule_impl(std::false_type)  {return x3::eps;};
-    template<typename T>
-    auto inv_const_rule() {using t = std::is_const<typename std::remove_reference<T>::type>; return inv_const_rule_impl(t());}
-
-    inline auto inv_volatile_rule_impl(std::true_type )  {return "volatile" >> x3::space;};
-    inline auto inv_volatile_rule_impl(std::false_type)  {return x3::eps;};
-    template<typename T>
-    auto inv_volatile_rule() {using t = std::is_volatile<typename std::remove_reference<T>::type>; return inv_volatile_rule_impl(t());}
-
-
-    inline auto reference_rule_impl(std::false_type, std::false_type) {return x3::eps;}
-    inline auto reference_rule_impl(std::true_type,  std::false_type) {return x3::space >>"&"  ;}
-    inline auto reference_rule_impl(std::false_type, std::true_type ) {return x3::space >>"&&" ;}
-
-
-    template<typename T>
-    auto reference_rule() {using t_l = std::is_lvalue_reference<T>; using t_r = std::is_rvalue_reference<T>; return reference_rule_impl(t_l(), t_r());}
-
-    auto const class_ = ("class" | x3::lit("struct"));
-
-    //it takes a string, because it may be overloaded.
-    template<typename T>
-    auto type_rule(const std::string & type_name)
-    {
-        using namespace std;
-
-        return -(class_ >> x3::space)>> x3::string(type_name) >>
-                const_rule<T>() >>
-                volatile_rule<T>() >>
-                reference_rule<T>() >>
-                ptr_rule();
-    }
-    template<>
-    inline auto type_rule<void>(const std::string &) { return x3::string("void"); };
 
     template<typename T>
     std::string::size_type find_type(const mangled_storage_impl& ms, boost::core::string_view s_orig) {
@@ -259,17 +187,10 @@ namespace parser
             }
         }
 
-        s = trim_ptrs(s);
+        s = parser::trim_ptrs(s);
         return s_orig.size() - s.size();
     }
 
-    auto const cdecl_   = "__cdecl"     >> x3::space;
-    auto const stdcall  = "__stdcall"     >> x3::space;
-#if defined(_WIN64)//seems to be necessary by msvc 14-x64
-    auto const thiscall = "__cdecl"     >> x3::space;
-#else
-    auto const thiscall = "__thiscall"     >> x3::space;
-#endif
     inline std::string::size_type find_thiscall(boost::core::string_view s) {
         if (s.starts_with(" __cdecl ")) {               // Win 64bit
             return sizeof(" __cdecl ") - 1;
@@ -278,26 +199,6 @@ namespace parser
         }
         return std::string::npos;
     }
-
-    template<typename Return, typename Arg>
-    auto arg_list(const mangled_storage_impl & ms, Return (*)(Arg))
-    {
-        return type_rule<Arg>(ms.get_name<Arg>());
-    }
-
-    template<typename Return, typename First, typename Second, typename ...Args>
-    auto arg_list(const mangled_storage_impl & ms, Return (*)(First, Second, Args...))
-    {
-        using next_type = Return (*)(Second, Args...);
-        return type_rule<First>(ms.get_name<First>()) >> x3::char_(',') >> arg_list(ms, next_type());
-    }
-
-    template<typename Return>
-    auto arg_list(const mangled_storage_impl& /*ms*/, Return (*)())
-    {
-        return x3::string("void");
-    }
-
 
     template<typename Return, typename Arg>
     std::string::size_type find_arg_list(const mangled_storage_impl& ms, boost::core::string_view s, Return (*)(Arg))
@@ -637,7 +538,7 @@ namespace parser
 
 template<typename T>
 std::string mangled_storage_impl::get_variable(const std::string &name) const {
-    const auto found = std::find_if(storage_.begin(), storage_.end(), parser::is_variable_with_name<T>(name));
+    const auto found = std::find_if(storage_.begin(), storage_.end(), parser::is_variable_with_name<T>(name, *this));
 
     if (found != storage_.end())
         return found->mangled;
@@ -647,7 +548,7 @@ std::string mangled_storage_impl::get_variable(const std::string &name) const {
 
 template<typename Func>
 std::string mangled_storage_impl::get_function(const std::string &name) const {
-    const auto found = std::find_if(storage_.begin(), storage_.end(), parser::is_function_with_name<Func*>(name));
+    const auto found = std::find_if(storage_.begin(), storage_.end(), parser::is_function_with_name<Func*>(name, *this));
 
     if (found != storage_.end())
         return found->mangled;
@@ -657,7 +558,7 @@ std::string mangled_storage_impl::get_function(const std::string &name) const {
 
 template<typename Class, typename Func>
 std::string mangled_storage_impl::get_mem_fn(const std::string &name) const {
-    const auto found = std::find_if(storage_.begin(), storage_.end(), parser::is_mem_fn_with_name<Class, Func*>(name));
+    const auto found = std::find_if(storage_.begin(), storage_.end(), parser::is_mem_fn_with_name<Class, Func*>(name, *this));
 
     if (found != storage_.end())
         return found->mangled;

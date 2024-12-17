@@ -58,8 +58,8 @@ int main(int argc, char* argv[])
         BOOST_TEST_EQ(parser::find_arg_list(ms, "int,int", ptr3), 7);
     }
     {
-        void(*ptr4)(int,short,long) = nullptr;
-        BOOST_TEST_EQ(parser::find_arg_list(ms, "int,short,long", ptr4), 14);
+        void(*ptr4)(int,int,int) = nullptr;
+        BOOST_TEST_EQ(parser::find_arg_list(ms, "int,int,int", ptr4), 11);
     }
 
 
