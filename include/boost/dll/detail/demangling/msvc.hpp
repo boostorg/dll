@@ -469,7 +469,7 @@ namespace parser
 
 template<typename T>
 std::string mangled_storage_impl::get_variable(const std::string &name) const {
-    const auto found = std::find_if(storage_.begin(), storage_.end(), parser::is_variable_with_name<T>{name});
+    const auto found = std::find_if(storage_.begin(), storage_.end(), parser::is_variable_with_name<T>(std::move(name)));
 
     if (found != storage_.end())
         return found->mangled;
@@ -574,7 +574,7 @@ auto mangled_storage_impl::get_constructor() const -> ctor_sym {
         }
     }
 
-    const auto f = std::find_if(storage_.begin(), storage_.end(), parser::is_constructor_with_name<func_type>{ctor_name, *this});
+    const auto f = std::find_if(storage_.begin(), storage_.end(), parser::is_constructor_with_name<func_type>(std::move(ctor_name), *this));
 
     if (f != storage_.end())
         return f->mangled;
@@ -583,9 +583,7 @@ auto mangled_storage_impl::get_constructor() const -> ctor_sym {
 }
 
 template<typename Class>
-auto mangled_storage_impl::get_destructor() const -> dtor_sym
-{
-    using namespace parser;
+auto mangled_storage_impl::get_destructor() const -> dtor_sym {
     std::string dtor_name; // = class_name + "::" + name;
     std::string unscoped_cname; //the unscoped class-name
     {
@@ -603,7 +601,7 @@ auto mangled_storage_impl::get_destructor() const -> dtor_sym
         }
     }
 
-    const auto found = std::find_if(storage_.begin(), storage_.end(), is_destructor_with_name{dtor_name});
+    const auto found = std::find_if(storage_.begin(), storage_.end(), parser::is_destructor_with_name(std::move(dtor_name)));
 
     if (found != storage_.end())
         return found->mangled;
