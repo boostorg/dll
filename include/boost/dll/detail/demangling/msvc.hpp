@@ -8,6 +8,9 @@
 #define BOOST_DLL_DETAIL_DEMANGLING_MSVC_HPP_
 
 #include <boost/dll/detail/demangling/mangled_storage_base.hpp>
+
+#include <boost/core/detail/string_view.hpp>
+
 #include <iterator>
 #include <algorithm>
 #include <type_traits>
@@ -106,9 +109,50 @@ namespace parser
         return ptr_rule_impl(std::integral_constant<std::size_t, sizeof(std::size_t)*8>());
     }
 
+    inline boost::core::string_view trim_ptrs(boost::core::string_view s) {
+        bool retry = false; 
+        do {
+            retry = false;
+            while (s.starts_with(" ")) {
+                s.remove_prefix(1);
+            }
+
+            if (s.starts_with("__ptr32") || s.starts_with("__ptr64")) {
+                s.remove_prefix(sizeof("__ptr64") - 1);
+                retry = true;
+            }
+        } while (retry);
+
+        return s;
+    }
+
     auto const visibility = ("public:" | x3::lit("protected:") | "private:");
+    inline std::string::size_type find_visibility(boost::core::string_view s) {
+        if (s.starts_with("public:")) {
+            return sizeof("public:") - 1;
+        } else if (s.starts_with("protected:")) {
+            return sizeof("protected:") - 1;
+        } else if (s.starts_with("private:")) {
+            return sizeof("private:") - 1;
+        }
+        return std::string::npos;
+    }
+
     auto const virtual_ = x3::space >> "virtual";
+    inline std::string::size_type find_virtual(boost::core::string_view s) {
+        if (s.starts_with(" virtual")) {
+            return sizeof(" virtual") - 1;
+        }
+        return std::string::npos;
+    }
+
     auto const static_     = x3::space >> x3::lit("static") ;
+    inline std::string::size_type find_static(boost::core::string_view s) {
+        if (s.starts_with(" static")) {
+            return sizeof(" static") - 1;
+        }
+        return std::string::npos;
+    }
 
     inline auto const_rule_impl(std::true_type )  {return x3::space >> "const";};
     inline auto const_rule_impl(std::false_type)  {return x3::eps;};
@@ -164,6 +208,18 @@ namespace parser
 #else
     auto const thiscall = "__thiscall"     >> x3::space;
 #endif
+    inline std::string::size_type find_thiscall(boost::core::string_view s) {
+#if defined(_WIN64)//seems to be necessary by msvc 14-x64
+        if (s.starts_with(" __cdecl ")) {
+            return sizeof(" __cdecl ") - 1;
+        }
+#else
+        if (s.starts_with(" __thiscall ")) {
+            return sizeof(" __thiscall ") - 1;
+        }
+#endif
+        return std::string::npos;
+    }
 
     template<typename Return, typename Arg>
     auto arg_list(const mangled_storage_impl & ms, Return (*)(Arg))
@@ -183,6 +239,45 @@ namespace parser
     {
         return x3::string("void");
     }
+
+    struct is_destructor_with_name {
+        const std::string dtor_name;
+
+        inline bool operator()(boost::core::string_view s) const {
+            {
+                const auto visibility_pos = find_visibility(s);
+                if (visibility_pos == std::string::npos) {
+                    return false;
+                }
+                s.remove_prefix(visibility_pos);
+            }
+            {
+                const auto virtual_pos = find_visibility(s);
+                if (virtual_pos != std::string::npos) {
+                    return false;
+                }
+            }
+            {
+                // cdecl declaration for methods. stdcall cannot be
+                const auto thiscall_pos = find_thiscall(s);
+                if (thiscall_pos == std::string::npos) {
+                    return false;
+                }
+                s.remove_prefix(thiscall_pos);
+            }
+
+            if (!s.starts_with(dtor_name)) {
+                return false;
+            }
+            s.remove_prefix(dtor_name.size());
+            s = trim_ptrs(s);
+            return s.empty();
+        }
+
+        inline bool operator()(const mangled_storage_base::entry& e) const {
+            return (*this)(boost::core::string_view(e.demangled.data(), e.demangled.size()));
+        }
+    };
 }
 
 
@@ -367,22 +462,7 @@ auto mangled_storage_impl::get_destructor() const -> dtor_sym
         }
     }
 
-    auto matcher =
-                visibility >> -virtual_ >> x3::space >>
-                thiscall >> //cdecl declaration for methods. stdcall cannot be
-                dtor_name >> parser::ptr_rule();
-
-
-    auto predicate = [&](const mangled_storage_base::entry & e)
-                {
-                    auto itr = e.demangled.begin();
-                    auto end = e.demangled.end();
-                    auto res = x3::parse(itr, end, matcher);
-
-                    return res && (itr == end);
-                };
-
-    auto found = std::find_if(storage_.begin(), storage_.end(), predicate);
+    auto found = std::find_if(storage_.begin(), storage_.end(), is_destructor_with_name{dtor_name});
 
 
     if (found != storage_.end())
