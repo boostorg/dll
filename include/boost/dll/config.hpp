@@ -16,7 +16,7 @@
 #endif
 
 #ifdef BOOST_DLL_DOXYGEN
-/// Define this macro to make Boost.DLL use C++17's std::filesystem::path, std::system_error and std::error_code.
+/// Define this macro to make Boost.DLL use C++17's std::filesystem::path, boost::dll::fs::system_error and std::error_code.
 #define BOOST_DLL_USE_STD_FS BOOST_DLL_USE_STD_FS
 
 /// This namespace contains aliases to the Boost or C++17 classes. Aliases are configured using BOOST_DLL_USE_STD_FS macro.
@@ -29,6 +29,10 @@ using path = std::conditional_t<BOOST_DLL_USE_STD_FS, std::filesystem::path, boo
 /// Alias to `std::error_code` if \forcedmacrolink{BOOST_DLL_USE_STD_FS} is defined by user.
 /// boost::system::error_code otherwise.
 using error_code = std::conditional_t<BOOST_DLL_USE_STD_FS, std::error_code, boost::system::error_code>;
+
+/// Alias to `std::system_error` if \forcedmacrolink{BOOST_DLL_USE_STD_FS} is defined by user.
+/// Alias to `boost::system::system_error` otherwise.
+using system_error = std::conditional_t<BOOST_DLL_USE_STD_FS, std::system_error, boost::system::system_error>;
 
 }}}
 
@@ -44,6 +48,7 @@ namespace boost { namespace dll { namespace fs {
 
 using namespace std::filesystem;
 using std::error_code;
+using std::system_error;
 
 }}}
 
@@ -57,6 +62,7 @@ namespace boost { namespace dll { namespace fs {
 
 using namespace boost::filesystem;
 using boost::system::error_code;
+using boost::system::system_error;
 
 }}}
 
