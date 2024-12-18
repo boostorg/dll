@@ -101,6 +101,11 @@ namespace parser {
         } while (parser::consume_string(s, "__ptr32") || parser::consume_string(s, "__ptr64"));
     }
 
+    inline bool ignore_ptrs(boost::core::string_view& s) {
+        parser::consume_ptrs(s);
+        return true;
+    }
+
     inline bool consume_visibility(boost::core::string_view& s) {
         return parser::consume_string(s, "public:")
             || parser::consume_string(s, "protected:")
@@ -145,8 +150,7 @@ namespace parser {
             }
         }
 
-        parser::consume_ptrs(s);
-        return true;
+        return parser::ignore_ptrs(s);
     }
 
     inline bool consume_thiscall(boost::core::string_view& s) {
@@ -186,15 +190,10 @@ namespace parser {
             }
             parser::consume_string(s, " virtual");
         
-            if (!parser::consume_thiscall(s)) {
-                return false;
-            }
-        
-            if (!parser::consume_string(s, dtor_name_)) {
-                return false;
-            }
-            parser::consume_ptrs(s);
-            return s.empty();
+            return parser::consume_thiscall(s)
+                && parser::consume_string(s, dtor_name_)
+                && parser::ignore_ptrs(s)
+                && s.empty();
         }
 
         inline bool operator()(const mangled_storage_base::entry& e) const {
@@ -236,31 +235,14 @@ namespace parser {
             : ctor_name_(ctor_name), ms_(ms) {}
 
         inline bool operator()(boost::core::string_view s) const {
-            if (!parser::consume_visibility(s)) {
-                return false;
-            }
-            if (!parser::consume_thiscall(s)) {
-                return false;
-            }
-
-            if (!parser::consume_string(s, ctor_name_)) {
-                return false;
-            }
-
-            if (!parser::consume_string(s, "(")) {
-                return false;
-            }
-
-            if (!parser::consume_arg_list(s, ms_, Signature())) {
-                return false;
-            }
-
-            if (!parser::consume_string(s, ")")) {
-                return false;
-            }
-
-            parser::consume_ptrs(s);
-            return s.empty();
+            return parser::consume_visibility(s)
+                && parser::consume_thiscall(s)
+                && parser::consume_string(s, ctor_name_)
+                && parser::consume_string(s, "(")
+                && parser::consume_arg_list(s, ms_, Signature())
+                && parser::consume_string(s, ")")
+                && parser::ignore_ptrs(s)
+                && s.empty();
         }
 
         inline bool operator()(const mangled_storage_base::entry& e) const {
@@ -290,29 +272,14 @@ namespace parser {
 
             parser::consume_string(s, " ");
 
-            if (!parser::consume_string(s, "__cdecl ")) {
-                return false;
-            }
-
-            if (!parser::consume_string(s, function_name_)) {
-                return false;
-            }
-            
-            if (!parser::consume_string(s, "(")) {
-                return false;
-            }
-
             using Signature = Result(*)(Args...);
-            if (!parser::consume_arg_list(s, ms_, Signature())) {
-                return false;
-            }
-
-            if (!parser::consume_string(s, ")")) {
-                return false;
-            }
-
-            parser::consume_ptrs(s);
-            return s.empty();
+            return parser::consume_string(s, "__cdecl ")
+                && parser::consume_string(s, function_name_)
+                && parser::consume_string(s, "(")
+                && parser::consume_arg_list(s, ms_, Signature())
+                && parser::consume_string(s, ")")
+                && parser::ignore_ptrs(s)
+                && s.empty();
         }
 
         inline bool operator()(const mangled_storage_base::entry& e) const {
