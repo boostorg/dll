@@ -150,27 +150,18 @@ namespace parser {
     }
 
     inline bool consume_thiscall(boost::core::string_view& s) {
-        if (s.starts_with(" ")) s.remove_prefix(1);
-
-        if (s.starts_with("__cdecl ")) {               // Win 64bit
-            s.remove_prefix(sizeof("__cdecl ") - 1);
-            return true;
-        } else if (s.starts_with("__thiscall ")) {     // Win 32bit
-            s.remove_prefix(sizeof("__thiscall ") - 1);
-            return true;
-        }
-        return false;
+        parser::consume_string(s, " ");
+        return parser::consume_string(s, "__cdecl ")         // Win 64bit
+            || parser::consume_string(s, "__thiscall ");     // Win 32bit
     }
 
     template<typename Return, typename Arg>
-    bool consume_arg_list(boost::core::string_view& s, const mangled_storage_impl& ms, Return (*)(Arg))
-    {
+    bool consume_arg_list(boost::core::string_view& s, const mangled_storage_impl& ms, Return (*)(Arg)) {
         return parser::consume_type<Arg>(s, ms);
     }
 
     template<typename Return, typename First, typename Second, typename ...Args>
-    bool consume_arg_list(boost::core::string_view& s, const mangled_storage_impl& ms, Return (*)(First, Second, Args...))
-    {
+    bool consume_arg_list(boost::core::string_view& s, const mangled_storage_impl& ms, Return (*)(First, Second, Args...)) {
         using next_type = Return (*)(Second, Args...);
         return parser::consume_type<First>(s, ms)
             && parser::consume_string(s, ",")
@@ -199,10 +190,9 @@ namespace parser {
                 return false;
             }
         
-            if (!s.starts_with(dtor_name_)) {
+            if (!parser::consume_string(s, dtor_name_)) {
                 return false;
             }
-            s.remove_prefix(dtor_name_.size());
             parser::consume_ptrs(s);
             return s.empty();
         }
@@ -226,14 +216,9 @@ namespace parser {
                 return false;
             }
 
-            if (!parser::consume_type<T>(s, ms_)) {
-                return false;
-            }
-            
-            if (!parser::consume_string(s, variable_name_)) {
-                return false;
-            }
-            return s.empty();
+            return parser::consume_type<T>(s, ms_)
+                && parser::consume_string(s, variable_name_)
+                && s.empty();
         }
 
         inline bool operator()(const mangled_storage_base::entry& e) const {
@@ -258,24 +243,21 @@ namespace parser {
                 return false;
             }
 
-            if (!s.starts_with(ctor_name_)) {
+            if (!parser::consume_string(s, ctor_name_)) {
                 return false;
             }
-            s.remove_prefix(ctor_name_.size());
 
-            if (!s.starts_with("(")) {
+            if (!parser::consume_string(s, "(")) {
                 return false;
             }
-            s.remove_prefix(1);
 
             if (!parser::consume_arg_list(s, ms_, Signature())) {
                 return false;
             }
 
-            if (!s.starts_with(")")) {
+            if (!parser::consume_string(s, ")")) {
                 return false;
             }
-            s.remove_prefix(1);
 
             parser::consume_ptrs(s);
             return s.empty();
@@ -306,32 +288,28 @@ namespace parser {
                 return false;
             }
 
-            if (s.starts_with(" ")) s.remove_prefix(1);
-            if (!s.starts_with("__cdecl ")) {
-                throw std::runtime_error(s);
-                return false;
-            }
-            s.remove_prefix(sizeof("__cdecl ") - 1);
+            parser::consume_string(s, " ");
 
-            if (!s.starts_with(function_name_)) {
+            if (!parser::consume_string(s, "__cdecl ")) {
                 return false;
             }
-            s.remove_prefix(function_name_.size());
 
-            if (!s.starts_with("(")) {
+            if (!parser::consume_string(s, function_name_)) {
                 return false;
             }
-            s.remove_prefix(1);
+            
+            if (!parser::consume_string(s, "(")) {
+                return false;
+            }
 
             using Signature = Result(*)(Args...);
             if (!parser::consume_arg_list(s, ms_, Signature())) {
                 return false;
             }
 
-            if (!s.starts_with(")")) {
+            if (!parser::consume_string(s, ")")) {
                 return false;
             }
-            s.remove_prefix(1);
 
             parser::consume_ptrs(s);
             return s.empty();
@@ -360,10 +338,9 @@ namespace parser {
             }
             parser::consume_string(s, " virtual");
 
-            if (!s.starts_with(" ")) {
+            if (!parser::consume_string(s, " ")) {
                 return false;
             }
-            s.remove_prefix(1);
 
             if (!parser::consume_type<Result>(s, ms_)) {
                 return false;
@@ -375,44 +352,34 @@ namespace parser {
             if (!parser::consume_type<typename std::remove_cv<Class>::type>(s, ms_)) {
                 return false;
             }
-            if (!s.starts_with("::")) {
+            if (!parser::consume_string(s, "::")) {
                 return false;
             }
-            s.remove_prefix(sizeof("::") - 1);
-
-            if (!s.starts_with(function_name_)) {
+            if (!parser::consume_string(s, function_name_)) {
                 return false;
             }
-            s.remove_prefix(function_name_.size());
-
-            if (!s.starts_with("(")) {
+            if (!parser::consume_string(s, "(")) {
                 return false;
             }
-            s.remove_prefix(1);
 
             using Signature = Result(*)(Args...);
             if (!parser::consume_arg_list(s, ms_, Signature())) {
                 return false;
             }
 
-            if (!s.starts_with(")")) {
+            if (!parser::consume_string(s, ")")) {
                 return false;
             }
-            s.remove_prefix(1);
 
             if (std::is_const<Class>::value) {
-                if (!s.starts_with("const ")) {
+                if (!parser::consume_string(s, "const ")) {
                     return false;
-                } else {
-                    s.remove_prefix(sizeof("const ") - 1);
                 }
             }
 
             if (std::is_volatile<Class>::value) {
-                if (!s.starts_with("volatile ")) {
+                if (!parser::consume_string(s, "volatile ")) {
                     return false;
-                } else {
-                    s.remove_prefix(sizeof("volatile ") - 1);
                 }
             }
 
