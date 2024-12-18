@@ -93,6 +93,11 @@ namespace parser {
         }
         return result;
     }
+
+    inline bool ignore_prefix(boost::core::string_view& s, boost::core::string_view prefix) {
+        parser::try_consume_prefix(s, prefix);
+        return true;
+    }
     
     inline void consume_ptrs(boost::core::string_view& s) {
         do {
@@ -117,8 +122,8 @@ namespace parser {
             return parser::try_consume_prefix(s, "void");
         }
 
-        parser::try_consume_prefix(s, "class ");
-        parser::try_consume_prefix(s, "struct ");
+        parser::ignore_prefix(s, "class ");
+        parser::ignore_prefix(s, "struct ");
 
         const auto& mangled_name = ms.get_name<T>();
         if (!parser::try_consume_prefix(s, mangled_name)) {
@@ -184,12 +189,9 @@ namespace parser {
             : dtor_name_(dtor_name) {}
 
         inline bool operator()(boost::core::string_view s) const {
-            if (!parser::try_consume_visibility(s)) {
-                return false;
-            }
-            parser::try_consume_prefix(s, " virtual");
-        
-            return parser::try_consume_thiscall(s)
+            return parser::try_consume_visibility(s)
+                && parser::ignore_prefix(s, " virtual")
+                && parser::try_consume_thiscall(s)
                 && parser::try_consume_prefix(s, dtor_name_)
                 && parser::ignore_ptrs(s)
                 && s.empty();
@@ -265,14 +267,11 @@ namespace parser {
             if (parser::try_consume_visibility(s) && !parser::try_consume_prefix(s, " static ")) {
                 return false;
             }
-            if (!parser::try_consume_type<Result>(s,  ms_)) {
-                return false;
-            }
-
-            parser::try_consume_prefix(s, " ");
 
             using Signature = Result(*)(Args...);
-            return parser::try_consume_prefix(s, "__cdecl ")
+            return parser::try_consume_type<Result>(s,  ms_)
+                && parser::ignore_prefix(s, " ")
+                && parser::try_consume_prefix(s, "__cdecl ")
                 && parser::try_consume_prefix(s, function_name_)
                 && parser::try_consume_prefix(s, "(")
                 && parser::try_consume_arg_list(s, ms_, Signature())
@@ -299,13 +298,10 @@ namespace parser {
             : function_name_(function_name), ms_(ms) {}
 
         inline bool operator()(boost::core::string_view s) const {
-            if (!parser::try_consume_visibility(s)) {
-                return false;
-            }
-            parser::try_consume_prefix(s, " virtual");
-
             using Signature = Result(*)(Args...);
-            const bool is_name_and_args_ok = parser::try_consume_prefix(s, " ")
+            return parser::try_consume_visibility(s)
+                && parser::ignore_prefix(s, " virtual")
+                && parser::try_consume_prefix(s, " ")
                 && parser::try_consume_type<Result>(s, ms_)
                 && parser::try_consume_thiscall(s)
                 && parser::try_consume_type<typename std::remove_cv<Class>::type>(s, ms_)
@@ -313,25 +309,11 @@ namespace parser {
                 && parser::try_consume_prefix(s, function_name_)
                 && parser::try_consume_prefix(s, "(")
                 && parser::try_consume_arg_list(s, ms_, Signature())
-                && parser::try_consume_prefix(s, ")");
-            if (!is_name_and_args_ok) {
-                return false;
-            }
-
-            if (std::is_const<Class>::value) {
-                if (!parser::try_consume_prefix(s, "const ")) {
-                    return false;
-                }
-            }
-
-            if (std::is_volatile<Class>::value) {
-                if (!parser::try_consume_prefix(s, "volatile ")) {
-                    return false;
-                }
-            }
-
-            parser::ignore_ptrs(s);
-            return s.empty();
+                && parser::try_consume_prefix(s, ")")
+                && (!std::is_const<Class>::value || parser::try_consume_prefix(s, "const "))
+                && (!std::is_volatile<Class>::value || parser::try_consume_prefix(s, "volatile "))
+                && parser::ignore_ptrs(s)
+                && s.empty();
         }
 
         inline bool operator()(const mangled_storage_base::entry& e) const {
