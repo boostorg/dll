@@ -96,79 +96,57 @@ namespace parser {
     }
     
     inline void consume_ptrs(boost::core::string_view& s) {
-        bool retry = false;
         do {
-            retry = false;
-            while (s.starts_with(" ")) {
-                s.remove_prefix(1);
-            }
-
-            if (s.starts_with("__ptr32") || s.starts_with("__ptr64")) {
-                s.remove_prefix(sizeof("__ptr64") - 1);
-                retry = true;
-            }
-        } while (retry);
+            while (parser::consume_string(s, " ")) {}
+        } while (parser::consume_string(s, "__ptr32") || parser::consume_string(s, "__ptr64"));
     }
 
     inline bool consume_visibility(boost::core::string_view& s) {
-        return parser::consume_string(s ,"public:")
+        return parser::consume_string(s, "public:")
             || parser::consume_string(s, "protected:")
             || parser::consume_string(s, "private:");
     }
 
     template<typename T>
-    std::string::size_type find_type(const mangled_storage_impl& ms, boost::core::string_view s_orig) {
+    bool consume_type(boost::core::string_view& s, const mangled_storage_impl& ms) {
         if (std::is_void<T>::value) {
-            if (s_orig.starts_with("void")) {
-                return sizeof("void") - 1;
-            }
-            return std::string::npos;
+            return parser::consume_string(s, "void");
         }
 
-        auto s = s_orig;
         parser::consume_string(s, "class ");
         parser::consume_string(s, "struct ");
 
         const auto& mangled_name = ms.get_name<T>();
-        if (!s.starts_with(mangled_name)) {
-            return std::string::npos;
+        if (!parser::consume_string(s, mangled_name)) {
+            return false;
         }
-        s.remove_prefix(mangled_name.size());
 
         if (std::is_const<typename std::remove_reference<T>::type>::value) {
-            if (!s.starts_with(" const")) {
-                return std::string::npos;
-            } else {
-                s.remove_prefix(sizeof(" const") - 1);
+            if (!parser::consume_string(s, " const")) {
+                return false;
             }
         }
 
         if (std::is_volatile<typename std::remove_reference<T>::type>::value) {
-            if (!s.starts_with(" volatile")) {
-                return std::string::npos;
-            } else {
-                s.remove_prefix(sizeof(" volatile") - 1);
+            if (!parser::consume_string(s, " volatile")) {
+                return false;
             }
         }
 
         if (std::is_rvalue_reference<T>::value) {
-            if (!s.starts_with(" &&")) {
-                return std::string::npos;
-            } else {
-                s.remove_prefix(sizeof(" &&") - 1);
+            if (!parser::consume_string(s, " &&")) {
+                return false;
             }
         }
 
         if (std::is_lvalue_reference<T>::value) {
-            if (!s.starts_with(" &")) {
-                return std::string::npos;
-            } else {
-                s.remove_prefix(sizeof(" &") - 1);
+            if (!parser::consume_string(s, " &")) {
+                return false;
             }
         }
 
         parser::consume_ptrs(s);
-        return s_orig.size() - s.size();
+        return true;
     }
 
     inline bool consume_thiscall(boost::core::string_view& s) {
@@ -185,37 +163,23 @@ namespace parser {
     }
 
     template<typename Return, typename Arg>
-    std::string::size_type find_arg_list(const mangled_storage_impl& ms, boost::core::string_view s, Return (*)(Arg))
+    bool consume_arg_list(boost::core::string_view& s, const mangled_storage_impl& ms, Return (*)(Arg))
     {
-        return parser::find_type<Arg>(ms, s);
+        return parser::consume_type<Arg>(s, ms);
     }
 
     template<typename Return, typename First, typename Second, typename ...Args>
-    std::string::size_type find_arg_list(const mangled_storage_impl & ms, boost::core::string_view s, Return (*)(First, Second, Args...))
+    bool consume_arg_list(boost::core::string_view& s, const mangled_storage_impl& ms, Return (*)(First, Second, Args...))
     {
         using next_type = Return (*)(Second, Args...);
-
-        const auto res = parser::find_type<First>(ms, s);
-        if (res == std::string::npos) {
-            return std::string::npos;
-        }
-        s.remove_prefix(res);
-        if (!s.starts_with(",")) {
-            return std::string::npos;
-        }
-        s.remove_prefix(1);
-
-        const auto new_res = parser::find_arg_list(ms, s, next_type());
-        if (new_res == std::string::npos) {
-            return std::string::npos;
-        }
-
-        return res + 1 + new_res;
+        return parser::consume_type<First>(s, ms)
+            && parser::consume_string(s, ",")
+            && parser::consume_arg_list(s, ms, next_type());
     }
 
     template<typename Return>
-    std::string::size_type find_arg_list(const mangled_storage_impl& ms, boost::core::string_view s, Return (*)()) {
-        return parser::find_type<void>(ms, s);
+    bool consume_arg_list(boost::core::string_view& s, const mangled_storage_impl& ms, Return (*)()) {
+        return parser::consume_type<void>(s, ms);
     }
 
     class is_destructor_with_name {
@@ -261,18 +225,14 @@ namespace parser {
             if (parser::consume_visibility(s) && !parser::consume_string(s, " static ")) {
                 return false;
             }
-            {
-                const auto type_pos = parser::find_type<T>(ms_, s);
-                if (type_pos == std::string::npos) {
-                    return false;
-                }
-                s.remove_prefix(type_pos);
-            }
 
-            if (!s.starts_with(variable_name_)) {
+            if (!parser::consume_type<T>(s, ms_)) {
                 return false;
             }
-            s.remove_prefix(variable_name_.size());
+            
+            if (!parser::consume_string(s, variable_name_)) {
+                return false;
+            }
             return s.empty();
         }
 
@@ -308,12 +268,8 @@ namespace parser {
             }
             s.remove_prefix(1);
 
-            {
-                const auto arg_list_pos = parser::find_arg_list(ms_, s, Signature());
-                if (arg_list_pos == std::string::npos) {
-                    return false;
-                }
-                s.remove_prefix(arg_list_pos);
+            if (!parser::consume_arg_list(s, ms_, Signature())) {
+                return false;
             }
 
             if (!s.starts_with(")")) {
@@ -346,12 +302,8 @@ namespace parser {
             if (parser::consume_visibility(s) && !parser::consume_string(s, " static ")) {
                 return false;
             }
-            {
-                const auto type_pos = parser::find_type<Result>(ms_, s);
-                if (type_pos == std::string::npos) {
-                    return false;
-                }
-                s.remove_prefix(type_pos);
+            if (!parser::consume_type<Result>(s,  ms_)) {
+                return false;
             }
 
             if (s.starts_with(" ")) s.remove_prefix(1);
@@ -371,13 +323,9 @@ namespace parser {
             }
             s.remove_prefix(1);
 
-            {
-                using Signature = Result(*)(Args...);
-                const auto arg_list_pos = parser::find_arg_list(ms_, s, Signature());
-                if (arg_list_pos == std::string::npos) {
-                    return false;
-                }
-                s.remove_prefix(arg_list_pos);
+            using Signature = Result(*)(Args...);
+            if (!parser::consume_arg_list(s, ms_, Signature())) {
+                return false;
             }
 
             if (!s.starts_with(")")) {
@@ -417,24 +365,16 @@ namespace parser {
             }
             s.remove_prefix(1);
 
-            {
-                const auto type_pos = parser::find_type<Result>(ms_, s);
-                if (type_pos == std::string::npos) {
-                    return false;
-                }
-                s.remove_prefix(type_pos);
+            if (!parser::consume_type<Result>(s, ms_)) {
+                return false;
             }
+
             if (!parser::consume_thiscall(s)) {
                 return false;
             }
-            {
-                const auto type_pos = parser::find_type<typename std::remove_cv<Class>::type>(ms_, s);
-                if (type_pos == std::string::npos) {
-                    return false;
-                }
-                s.remove_prefix(type_pos);
+            if (!parser::consume_type<typename std::remove_cv<Class>::type>(s, ms_)) {
+                return false;
             }
-
             if (!s.starts_with("::")) {
                 return false;
             }
@@ -450,13 +390,9 @@ namespace parser {
             }
             s.remove_prefix(1);
 
-            {
-                using Signature = Result(*)(Args...);
-                const auto arg_list_pos = parser::find_arg_list(ms_, s, Signature());
-                if (arg_list_pos == std::string::npos) {
-                    return false;
-                }
-                s.remove_prefix(arg_list_pos);
+            using Signature = Result(*)(Args...);
+            if (!parser::consume_arg_list(s, ms_, Signature())) {
+                return false;
             }
 
             if (!s.starts_with(")")) {

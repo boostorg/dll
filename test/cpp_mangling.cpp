@@ -46,20 +46,34 @@ int main(int argc, char* argv[])
 
     boost::dll::detail::mangled_storage_impl ms;
     {
+        void(*ptr0)(int) = nullptr;
+        boost::core::string_view s = "integer";
+        BOOST_TEST(parser::consume_arg_list(s, ms, ptr0));
+        BOOST_TEST_EQ(s, "eger");
+    }
+    {
         void(*ptr1)(int) = nullptr;
-        BOOST_TEST_EQ(parser::find_arg_list(ms, "int", ptr1), 3);
+        boost::core::string_view s = "int";
+        BOOST_TEST(parser::consume_arg_list(s, ms, ptr1));
+        BOOST_TEST(s.empty());
     }
     {
         void(*ptr2)() = nullptr;
-        BOOST_TEST_EQ(parser::find_arg_list(ms, "void", ptr2), 4);
+        boost::core::string_view s = "void";
+        BOOST_TEST(parser::consume_arg_list(s, ms, ptr2));
+        BOOST_TEST(s.empty());
     }
     {
         void(*ptr3)(int,int) = nullptr;
-        BOOST_TEST_EQ(parser::find_arg_list(ms, "int,int", ptr3), 7);
+        boost::core::string_view s = "int,int";
+        BOOST_TEST(parser::consume_arg_list(s, ms, ptr3));
+        BOOST_TEST(s.empty());
     }
     {
         void(*ptr4)(int,int,int) = nullptr;
-        BOOST_TEST_EQ(parser::find_arg_list(ms, "int,int,int", ptr4), 11);
+        boost::core::string_view s = "int,int,int";
+        BOOST_TEST(parser::consume_arg_list(s, ms, ptr4));
+        BOOST_TEST(s.empty());
     }
 
 
