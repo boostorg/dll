@@ -84,21 +84,20 @@ void mangled_storage_impl::trim_typename(std::string & val)
     }
 }
 
-
 namespace parser {
 
-    inline bool consume_string(boost::core::string_view& s, boost::core::string_view str) {
-        const bool result = s.starts_with(str);
+    inline bool try_consume_prefix(boost::core::string_view& s, boost::core::string_view prefix) {
+        const bool result = s.starts_with(prefix);
         if (result) {
-            s.remove_prefix(str.size());
+            s.remove_prefix(prefix.size());
         }
         return result;
     }
     
     inline void consume_ptrs(boost::core::string_view& s) {
         do {
-            while (parser::consume_string(s, " ")) {}
-        } while (parser::consume_string(s, "__ptr32") || parser::consume_string(s, "__ptr64"));
+            while (parser::try_consume_prefix(s, " ")) {}
+        } while (parser::try_consume_prefix(s, "__ptr32") || parser::try_consume_prefix(s, "__ptr64"));
     }
 
     inline bool ignore_ptrs(boost::core::string_view& s) {
@@ -106,46 +105,46 @@ namespace parser {
         return true;
     }
 
-    inline bool consume_visibility(boost::core::string_view& s) {
-        return parser::consume_string(s, "public:")
-            || parser::consume_string(s, "protected:")
-            || parser::consume_string(s, "private:");
+    inline bool try_consume_visibility(boost::core::string_view& s) {
+        return parser::try_consume_prefix(s, "public:")
+            || parser::try_consume_prefix(s, "protected:")
+            || parser::try_consume_prefix(s, "private:");
     }
 
     template<typename T>
-    bool consume_type(boost::core::string_view& s, const mangled_storage_impl& ms) {
+    bool try_consume_type(boost::core::string_view& s, const mangled_storage_impl& ms) {
         if (std::is_void<T>::value) {
-            return parser::consume_string(s, "void");
+            return parser::try_consume_prefix(s, "void");
         }
 
-        parser::consume_string(s, "class ");
-        parser::consume_string(s, "struct ");
+        parser::try_consume_prefix(s, "class ");
+        parser::try_consume_prefix(s, "struct ");
 
         const auto& mangled_name = ms.get_name<T>();
-        if (!parser::consume_string(s, mangled_name)) {
+        if (!parser::try_consume_prefix(s, mangled_name)) {
             return false;
         }
 
         if (std::is_const<typename std::remove_reference<T>::type>::value) {
-            if (!parser::consume_string(s, " const")) {
+            if (!parser::try_consume_prefix(s, " const")) {
                 return false;
             }
         }
 
         if (std::is_volatile<typename std::remove_reference<T>::type>::value) {
-            if (!parser::consume_string(s, " volatile")) {
+            if (!parser::try_consume_prefix(s, " volatile")) {
                 return false;
             }
         }
 
         if (std::is_rvalue_reference<T>::value) {
-            if (!parser::consume_string(s, " &&")) {
+            if (!parser::try_consume_prefix(s, " &&")) {
                 return false;
             }
         }
 
         if (std::is_lvalue_reference<T>::value) {
-            if (!parser::consume_string(s, " &")) {
+            if (!parser::try_consume_prefix(s, " &")) {
                 return false;
             }
         }
@@ -153,28 +152,28 @@ namespace parser {
         return parser::ignore_ptrs(s);
     }
 
-    inline bool consume_thiscall(boost::core::string_view& s) {
-        parser::consume_string(s, " ");
-        return parser::consume_string(s, "__cdecl ")         // Win 64bit
-            || parser::consume_string(s, "__thiscall ");     // Win 32bit
+    inline bool try_consume_thiscall(boost::core::string_view& s) {
+        parser::try_consume_prefix(s, " ");
+        return parser::try_consume_prefix(s, "__cdecl ")         // Win 64bit
+            || parser::try_consume_prefix(s, "__thiscall ");     // Win 32bit
     }
 
     template<typename Return, typename Arg>
-    bool consume_arg_list(boost::core::string_view& s, const mangled_storage_impl& ms, Return (*)(Arg)) {
-        return parser::consume_type<Arg>(s, ms);
+    bool try_consume_arg_list(boost::core::string_view& s, const mangled_storage_impl& ms, Return (*)(Arg)) {
+        return parser::try_consume_type<Arg>(s, ms);
     }
 
     template<typename Return, typename First, typename Second, typename ...Args>
-    bool consume_arg_list(boost::core::string_view& s, const mangled_storage_impl& ms, Return (*)(First, Second, Args...)) {
+    bool try_consume_arg_list(boost::core::string_view& s, const mangled_storage_impl& ms, Return (*)(First, Second, Args...)) {
         using next_type = Return (*)(Second, Args...);
-        return parser::consume_type<First>(s, ms)
-            && parser::consume_string(s, ",")
-            && parser::consume_arg_list(s, ms, next_type());
+        return parser::try_consume_type<First>(s, ms)
+            && parser::try_consume_prefix(s, ",")
+            && parser::try_consume_arg_list(s, ms, next_type());
     }
 
     template<typename Return>
-    bool consume_arg_list(boost::core::string_view& s, const mangled_storage_impl& ms, Return (*)()) {
-        return parser::consume_type<void>(s, ms);
+    bool try_consume_arg_list(boost::core::string_view& s, const mangled_storage_impl& ms, Return (*)()) {
+        return parser::try_consume_type<void>(s, ms);
     }
 
     class is_destructor_with_name {
@@ -185,13 +184,13 @@ namespace parser {
             : dtor_name_(dtor_name) {}
 
         inline bool operator()(boost::core::string_view s) const {
-            if (!parser::consume_visibility(s)) {
+            if (!parser::try_consume_visibility(s)) {
                 return false;
             }
-            parser::consume_string(s, " virtual");
+            parser::try_consume_prefix(s, " virtual");
         
-            return parser::consume_thiscall(s)
-                && parser::consume_string(s, dtor_name_)
+            return parser::try_consume_thiscall(s)
+                && parser::try_consume_prefix(s, dtor_name_)
                 && parser::ignore_ptrs(s)
                 && s.empty();
         }
@@ -211,12 +210,12 @@ namespace parser {
             : variable_name_(variable_name), ms_(ms) {}
 
         inline bool operator()(boost::core::string_view s) const {
-            if (parser::consume_visibility(s) && !parser::consume_string(s, " static ")) {
+            if (parser::try_consume_visibility(s) && !parser::try_consume_prefix(s, " static ")) {
                 return false;
             }
 
-            return parser::consume_type<T>(s, ms_)
-                && parser::consume_string(s, variable_name_)
+            return parser::try_consume_type<T>(s, ms_)
+                && parser::try_consume_prefix(s, variable_name_)
                 && s.empty();
         }
 
@@ -235,12 +234,12 @@ namespace parser {
             : ctor_name_(ctor_name), ms_(ms) {}
 
         inline bool operator()(boost::core::string_view s) const {
-            return parser::consume_visibility(s)
-                && parser::consume_thiscall(s)
-                && parser::consume_string(s, ctor_name_)
-                && parser::consume_string(s, "(")
-                && parser::consume_arg_list(s, ms_, Signature())
-                && parser::consume_string(s, ")")
+            return parser::try_consume_visibility(s)
+                && parser::try_consume_thiscall(s)
+                && parser::try_consume_prefix(s, ctor_name_)
+                && parser::try_consume_prefix(s, "(")
+                && parser::try_consume_arg_list(s, ms_, Signature())
+                && parser::try_consume_prefix(s, ")")
                 && parser::ignore_ptrs(s)
                 && s.empty();
         }
@@ -263,21 +262,21 @@ namespace parser {
             : function_name_(function_name), ms_(ms) {}
 
         inline bool operator()(boost::core::string_view s) const {
-            if (parser::consume_visibility(s) && !parser::consume_string(s, " static ")) {
+            if (parser::try_consume_visibility(s) && !parser::try_consume_prefix(s, " static ")) {
                 return false;
             }
-            if (!parser::consume_type<Result>(s,  ms_)) {
+            if (!parser::try_consume_type<Result>(s,  ms_)) {
                 return false;
             }
 
-            parser::consume_string(s, " ");
+            parser::try_consume_prefix(s, " ");
 
             using Signature = Result(*)(Args...);
-            return parser::consume_string(s, "__cdecl ")
-                && parser::consume_string(s, function_name_)
-                && parser::consume_string(s, "(")
-                && parser::consume_arg_list(s, ms_, Signature())
-                && parser::consume_string(s, ")")
+            return parser::try_consume_prefix(s, "__cdecl ")
+                && parser::try_consume_prefix(s, function_name_)
+                && parser::try_consume_prefix(s, "(")
+                && parser::try_consume_arg_list(s, ms_, Signature())
+                && parser::try_consume_prefix(s, ")")
                 && parser::ignore_ptrs(s)
                 && s.empty();
         }
@@ -300,57 +299,38 @@ namespace parser {
             : function_name_(function_name), ms_(ms) {}
 
         inline bool operator()(boost::core::string_view s) const {
-            if (!parser::consume_visibility(s)) {
+            if (!parser::try_consume_visibility(s)) {
                 return false;
             }
-            parser::consume_string(s, " virtual");
-
-            if (!parser::consume_string(s, " ")) {
-                return false;
-            }
-
-            if (!parser::consume_type<Result>(s, ms_)) {
-                return false;
-            }
-
-            if (!parser::consume_thiscall(s)) {
-                return false;
-            }
-            if (!parser::consume_type<typename std::remove_cv<Class>::type>(s, ms_)) {
-                return false;
-            }
-            if (!parser::consume_string(s, "::")) {
-                return false;
-            }
-            if (!parser::consume_string(s, function_name_)) {
-                return false;
-            }
-            if (!parser::consume_string(s, "(")) {
-                return false;
-            }
+            parser::try_consume_prefix(s, " virtual");
 
             using Signature = Result(*)(Args...);
-            if (!parser::consume_arg_list(s, ms_, Signature())) {
-                return false;
-            }
-
-            if (!parser::consume_string(s, ")")) {
+            const bool is_name_and_args_ok = parser::try_consume_prefix(s, " ")
+                && parser::try_consume_type<Result>(s, ms_)
+                && parser::try_consume_thiscall(s)
+                && parser::try_consume_type<typename std::remove_cv<Class>::type>(s, ms_)
+                && parser::try_consume_prefix(s, "::")
+                && parser::try_consume_prefix(s, function_name_)
+                && parser::try_consume_prefix(s, "(")
+                && parser::try_consume_arg_list(s, ms_, Signature())
+                && parser::try_consume_prefix(s, ")");
+            if (!is_name_and_args_ok) {
                 return false;
             }
 
             if (std::is_const<Class>::value) {
-                if (!parser::consume_string(s, "const ")) {
+                if (!parser::try_consume_prefix(s, "const ")) {
                     return false;
                 }
             }
 
             if (std::is_volatile<Class>::value) {
-                if (!parser::consume_string(s, "volatile ")) {
+                if (!parser::try_consume_prefix(s, "volatile ")) {
                     return false;
                 }
             }
 
-            parser::consume_ptrs(s);
+            parser::ignore_ptrs(s);
             return s.empty();
         }
 
@@ -358,8 +338,7 @@ namespace parser {
             return (*this)(boost::core::string_view(e.demangled.data(), e.demangled.size()));
         }
     };
-}
-
+}  // namespace parser
 
 template<typename T>
 std::string mangled_storage_impl::get_variable(const std::string &name) const {
@@ -477,7 +456,6 @@ std::vector<std::string> mangled_storage_impl::get_related() const {
 
     return ret;
 }
-
 
 }}}
 
