@@ -87,7 +87,15 @@ void mangled_storage_impl::trim_typename(std::string & val)
 
 namespace parser {
 
-    inline boost::core::string_view trim_ptrs(boost::core::string_view s) {
+    inline bool consume_string(boost::core::string_view& s, boost::core::string_view str) {
+        const bool result = s.starts_with(str);
+        if (result) {
+            s.remove_prefix(str.size());
+        }
+        return result;
+    }
+    
+    inline void consume_ptrs(boost::core::string_view& s) {
         bool retry = false;
         do {
             retry = false;
@@ -100,28 +108,12 @@ namespace parser {
                 retry = true;
             }
         } while (retry);
-
-        return s;
-    }
-
-    inline boost::core::string_view trim_prefix(boost::core::string_view s, boost::core::string_view prefix) {
-        if (s.starts_with(prefix)) {
-            s.remove_prefix(prefix.size());
-        }
-        return s;
     }
 
     inline bool consume_visibility(boost::core::string_view& s) {
-        if (s.starts_with("public:")) {
-            s.remove_prefix(sizeof("public:") - 1);
-        } else if (s.starts_with("protected:")) {
-            s.remove_prefix(sizeof("protected:") - 1);
-        } else if (s.starts_with("private:")) {
-            s.remove_prefix(sizeof("private:") - 1);
-        } else {
-            return false;
-        }
-        return true;
+        return parser::consume_string(s ,"public:")
+            || parser::consume_string(s, "protected:")
+            || parser::consume_string(s, "private:");
     }
 
     template<typename T>
@@ -134,8 +126,8 @@ namespace parser {
         }
 
         auto s = s_orig;
-        s = trim_prefix(s, "class ");
-        s = trim_prefix(s, "struct ");
+        parser::consume_string(s, "class ");
+        parser::consume_string(s, "struct ");
 
         const auto& mangled_name = ms.get_name<T>();
         if (!s.starts_with(mangled_name)) {
@@ -175,7 +167,7 @@ namespace parser {
             }
         }
 
-        s = parser::trim_ptrs(s);
+        parser::consume_ptrs(s);
         return s_orig.size() - s.size();
     }
 
@@ -237,7 +229,7 @@ namespace parser {
             if (!parser::consume_visibility(s)) {
                 return false;
             }
-            s = trim_prefix(s, " virtual");
+            parser::consume_string(s, " virtual");
         
             if (!parser::consume_thiscall(s)) {
                 return false;
@@ -247,7 +239,7 @@ namespace parser {
                 return false;
             }
             s.remove_prefix(dtor_name_.size());
-            s = parser::trim_ptrs(s);
+            parser::consume_ptrs(s);
             return s.empty();
         }
 
@@ -266,8 +258,8 @@ namespace parser {
             : variable_name_(variable_name), ms_(ms) {}
 
         inline bool operator()(boost::core::string_view s) const {
-            if (parser::consume_visibility(s)) {
-                s = parser::trim_prefix(s, " static ");
+            if (parser::consume_visibility(s) && !parser::consume_string(s, " static ")) {
+                return false;
             }
             {
                 const auto type_pos = parser::find_type<T>(ms_, s);
@@ -329,7 +321,7 @@ namespace parser {
             }
             s.remove_prefix(1);
 
-            s = parser::trim_ptrs(s);
+            parser::consume_ptrs(s);
             return s.empty();
         }
 
@@ -351,8 +343,8 @@ namespace parser {
             : function_name_(function_name), ms_(ms) {}
 
         inline bool operator()(boost::core::string_view s) const {
-            if (parser::consume_visibility(s)) {
-                s = trim_prefix(s, " static ");
+            if (parser::consume_visibility(s) && !parser::consume_string(s, " static ")) {
+                return false;
             }
             {
                 const auto type_pos = parser::find_type<Result>(ms_, s);
@@ -393,7 +385,7 @@ namespace parser {
             }
             s.remove_prefix(1);
 
-            s = parser::trim_ptrs(s);
+            parser::consume_ptrs(s);
             return s.empty();
         }
 
@@ -418,7 +410,7 @@ namespace parser {
             if (!parser::consume_visibility(s)) {
                 return false;
             }
-            s = trim_prefix(s, " virtual");
+            parser::consume_string(s, " virtual");
 
             if (!s.starts_with(" ")) {
                 return false;
@@ -488,7 +480,7 @@ namespace parser {
                 }
             }
 
-            s = parser::trim_ptrs(s);
+            parser::consume_ptrs(s);
             return s.empty();
         }
 
