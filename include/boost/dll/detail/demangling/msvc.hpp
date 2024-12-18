@@ -357,7 +357,6 @@ namespace parser {
             {
                 const auto type_pos = parser::find_type<Result>(ms_, s);
                 if (type_pos == std::string::npos) {
-                    BOOST_ASSERT(false);
                     return false;
                 }
                 s.remove_prefix(type_pos);
@@ -366,19 +365,16 @@ namespace parser {
             if (s.starts_with(" ")) s.remove_prefix(1);
             if (!s.starts_with("__cdecl ")) {
                 throw std::runtime_error(s);
-                    BOOST_ASSERT(false);
                 return false;
             }
             s.remove_prefix(sizeof("__cdecl ") - 1);
 
             if (!s.starts_with(function_name_)) {
-                    BOOST_ASSERT(false);
                 return false;
             }
             s.remove_prefix(function_name_.size());
 
             if (!s.starts_with("(")) {
-                    BOOST_ASSERT(false);
                 return false;
             }
             s.remove_prefix(1);
@@ -387,14 +383,12 @@ namespace parser {
                 using Signature = Result(*)(Args...);
                 const auto arg_list_pos = parser::find_arg_list(ms_, s, Signature());
                 if (arg_list_pos == std::string::npos) {
-                    BOOST_ASSERT(false);
                     return false;
                 }
                 s.remove_prefix(arg_list_pos);
             }
 
             if (!s.starts_with(")")) {
-                    BOOST_ASSERT(false);
                 return false;
             }
             s.remove_prefix(1);
