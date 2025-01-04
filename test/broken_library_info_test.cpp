@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
     const auto self_binary = boost::dll::fs::path(argv[0]);
     const auto corrupted_binary = self_binary.parent_path() / "corrupted";
 
-    boost::filesystem::copy_file(self_binary, corrupted_binary, boost::filesystem::copy_option::overwrite_if_exists);
+    boost::filesystem::copy_file(self_binary, corrupted_binary, boost::filesystem::copy_options::overwrite_existing);
     {
         std::ofstream ofs{corrupted_binary.string(), std::ios::binary};
         ofs.seekp(0);
@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
     } catch (const std::exception& ) {}
 
 #if BOOST_OS_WINDOWS
-    boost::filesystem::copy_file(self_binary, corrupted_binary, boost::filesystem::copy_option::overwrite_if_exists);
+    boost::filesystem::copy_file(self_binary, corrupted_binary, boost::filesystem::copy_options::overwrite_existing);
     {
         std::ofstream ofs{corrupted_binary.string(), std::ios::binary};
         ofs.seekp(
@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
 
 #if !BOOST_OS_WINDOWS && !BOOST_OS_MACOS && !BOOST_OS_IOS
     // Elf
-    boost::filesystem::copy_file(self_binary, corrupted_binary, boost::filesystem::copy_option::overwrite_if_exists);
+    boost::filesystem::copy_file(self_binary, corrupted_binary, boost::filesystem::copy_options::overwrite_existing);
     {
         std::ofstream ofs{corrupted_binary.string(), std::ios::binary};
         ofs.seekp(40);  // header->e_shoff
