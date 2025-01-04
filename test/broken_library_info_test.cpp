@@ -15,7 +15,7 @@
 
 int main(int argc, char* argv[]) {
     BOOST_TEST(argc >= 1);
-    const auto self_binary = boost::dll::fs::path(argv[0]);
+    const auto self_binary = boost::filesystem::path(argv[0]);
     const auto corrupted_binary = self_binary.parent_path() / "corrupted";
 
     boost::filesystem::copy_file(self_binary, corrupted_binary, boost::filesystem::copy_options::overwrite_existing);
@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
         ofs << "bad";
     }
     try {
-        boost::dll::library_info lib_info(corrupted_binary);
+        boost::dll::library_info lib_info(corrupted_binary.string());
         BOOST_TEST(false);
     } catch (const std::exception& ) {}
 
@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
     }
 
     try {
-        boost::dll::library_info lib_info(corrupted_binary);
+        boost::dll::library_info lib_info(corrupted_binary.string());
         lib_info.sections();
         BOOST_TEST(false);
     } catch (const std::exception& ) {}
@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
     }
 
     try {
-        boost::dll::library_info lib_info(corrupted_binary);
+        boost::dll::library_info lib_info(corrupted_binary.string());
         lib_info.sections();
         BOOST_TEST(false);
     } catch (const std::exception& ) {}
