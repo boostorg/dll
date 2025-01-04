@@ -9,6 +9,7 @@
 #include <boost/dll/library_info.hpp>
 
 #include <fstream>
+#include <boost/filesystem.hpp>
 
 #include <boost/core/lightweight_test.hpp>
 
