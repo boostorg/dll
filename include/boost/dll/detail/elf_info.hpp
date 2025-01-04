@@ -156,7 +156,7 @@ private:
         if (pos < 0) {
             boost::throw_exception(std::runtime_error("Integral underflow while getting info from ELF file"));
         }
-        if (static_cast<std::streamoff>(pos) < pos) {
+        if (static_cast<std::streamoff>(pos) < 0) {
             boost::throw_exception(std::runtime_error("Integral overflow while getting info from ELF file"));
         }
 
