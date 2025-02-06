@@ -13,7 +13,7 @@
 
 #include <memory>  // std::addressof
 #include <type_traits>
-
+#include <iostream>
 #ifdef BOOST_HAS_PRAGMA_ONCE
 # pragma once
 #endif
@@ -109,9 +109,11 @@ BOOST_DLL_IMPORT_RESULT_TYPE import_symbol(const boost::dll::fs::path& lib, cons
     load_mode::type mode = load_mode::default_mode)
 {
     using type = boost::dll::detail::import_type<T>;
-
+std::cerr << "import_symbol 1\n";
     auto p = boost::dll::detail::make_shared<boost::dll::shared_library>(lib, mode);
+std::cerr << "import_symbol 2\n";
     auto* addr = std::addressof(p->get<T>(name));
+std::cerr << "import_symbol 3\n";
     return type(std::move(p), addr);
 }
 
