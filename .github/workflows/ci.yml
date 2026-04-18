@@ -35,6 +35,7 @@ jobs:
             gcov_tool: "gcov-14"
             ignore_coverage: "*/detail/pe_info.hpp */detail/macho_info.hpp */filesystem/src/*"
           - toolset: gcc-14
+            compiler: g++-14
             cxxstd: "17,2a"
             os: ubuntu-24.04
             # UBSAN complains on vtables and fails. No ',undefined -fno-sanitize-recover=undefined' flags!
