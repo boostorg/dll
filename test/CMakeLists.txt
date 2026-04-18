@@ -12,17 +12,22 @@ endif()
 
 add_library(dll_static_plugin STATIC ../example/tutorial4/static_plugin.cpp)
 target_link_libraries(dll_static_plugin PRIVATE Boost::dll)
+add_dependencies(tests dll_static_plugin)
 
 add_library(dll_static_refcounting_plugin STATIC ../example/tutorial8/refcounting_plugin.cpp)
 target_link_libraries(dll_static_refcounting_plugin PRIVATE Boost::dll)
+add_dependencies(tests dll_static_refcounting_plugin)
 
 add_library(dll_test_library SHARED test_library.cpp)
 target_link_libraries(dll_test_library PRIVATE Boost::dll Boost::fusion)
+add_dependencies(tests dll_test_library)
 
 add_library(dll_empty_library SHARED empty_library.cpp)
+add_dependencies(tests dll_empty_library)
 
 add_library(dll_getting_started_library SHARED ../example/getting_started_library.cpp)
 target_link_libraries(dll_getting_started_library PRIVATE Boost::dll)
+add_dependencies(tests dll_getting_started_library)
 
 add_library(dll_my_plugin_sum SHARED ../example/tutorial1/my_plugin_sum.cpp)
 target_link_libraries(dll_my_plugin_sum PRIVATE Boost::dll)
@@ -30,6 +35,7 @@ set_target_properties(dll_my_plugin_sum
   PROPERTIES
     OUTPUT_NAME "my_plugin_sum"
 )
+add_dependencies(tests dll_my_plugin_sum)
 
 add_library(dll_my_plugin_aggregator SHARED ../example/tutorial2/my_plugin_aggregator.cpp)
 target_link_libraries(dll_my_plugin_aggregator PRIVATE Boost::dll)
@@ -37,15 +43,19 @@ set_target_properties(dll_my_plugin_aggregator
   PROPERTIES
     OUTPUT_NAME "my_plugin_aggregator"
 )
+add_dependencies(tests dll_my_plugin_aggregator)
 
 add_library(dll_on_unload_lib SHARED ../example/tutorial6/on_unload_lib.cpp)
 target_link_libraries(dll_on_unload_lib PRIVATE Boost::dll)
+add_dependencies(tests dll_on_unload_lib)
 
 add_library(dll_library1 SHARED ../example/tutorial7/library1.cpp)
 target_link_libraries(dll_library1 PRIVATE Boost::dll)
+add_dependencies(tests dll_library1)
 
 add_library(dll_library2 SHARED ../example/tutorial7/library2.cpp)
 target_link_libraries(dll_library2 PRIVATE Boost::dll)
+add_dependencies(tests dll_library2)
 
 add_library(dll_refcounting_plugin SHARED ../example/tutorial8/refcounting_plugin.cpp)
 target_link_libraries(dll_refcounting_plugin PRIVATE Boost::dll)
@@ -53,12 +63,15 @@ set_target_properties(dll_refcounting_plugin
   PROPERTIES
     OUTPUT_NAME "refcounting_plugin"
 )
+add_dependencies(tests dll_refcounting_plugin)
 
 add_library(dll_cpp_plugin SHARED cpp_test_library.cpp)
 target_link_libraries(dll_cpp_plugin PRIVATE Boost::dll Boost::variant)
+add_dependencies(tests dll_cpp_plugin)
 
 add_library(dll_cpp_mangle_plugin SHARED cpp_ctti_type_name_parser_lib.cpp)
 target_link_libraries(dll_cpp_mangle_plugin PRIVATE Boost::dll)
+add_dependencies(tests dll_cpp_mangle_plugin)
 
 function(boost_dll_add_test name sources export_symbols)
   add_executable(${name} ${sources})
