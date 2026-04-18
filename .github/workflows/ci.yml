@@ -116,7 +116,7 @@ jobs:
             -DCMAKE_CXX_COMPILER=${{matrix.compiler}}
 
           cmake --build __build
-          ctest --test-dir __build --output-on-failure --no-tests=error
+          ctest --test-dir __build --output-on-failure --no-tests=error -VV
           rm -rf __build
 
       - name: Run CMake root tests

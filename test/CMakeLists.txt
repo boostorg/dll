@@ -82,7 +82,7 @@ boost_dll_add_test(dll_example_tutorial3 ../example/tutorial3/tutorial3.cpp #[[e
 boost_dll_add_test(dll_example_tutorial4 ../example/tutorial4/load_self.cpp #[[export_symbols=]] TRUE)
 target_link_libraries(dll_example_tutorial4 PRIVATE dll_static_plugin)
 
-boost_dll_add_test(dll_example_tutorial5 ../example/tutorial5/load_all.cpp #[[export_symbols=]] TRUE "${CMAKE_CURRENT_BINARY_DIR}")
+boost_dll_add_test(dll_example_tutorial5 ../example/tutorial5/load_all.cpp #[[export_symbols=]] TRUE "$<TARGET_FILE:dll_getting_started_library>" "$<TARGET_FILE:dll_my_plugin_aggregator>" "$<TARGET_FILE:dll_my_plugin_sum>")
 target_link_libraries(dll_example_tutorial5 PRIVATE dll_static_plugin)
 
 boost_dll_add_test(dll_example_tutorial6 ../example/tutorial6/tutorial6.cpp #[[export_symbols=]] FALSE "$<TARGET_FILE:dll_on_unload_lib>")
