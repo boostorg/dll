@@ -112,6 +112,7 @@ jobs:
             -GNinja \
             -DBUILD_TESTING=1 \
             -DCMAKE_CXX_COMPILER=${{matrix.compiler}}
+
           cmake --build __build
           ctest --test-dir __build --output-on-failure --no-tests=error
           rm -rf __build
@@ -124,6 +125,7 @@ jobs:
             -DBUILD_TESTING=1 \
             -DBOOST_INCLUDE_LIBRARIES=dll \
             -DCMAKE_CXX_COMPILER=${{matrix.compiler}}
+
           cmake --build __build --target tests
           ctest --test-dir __build --output-on-failure --no-tests=error
           rm -rf __build
