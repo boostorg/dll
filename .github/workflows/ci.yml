@@ -107,7 +107,7 @@ jobs:
       - name: Run CMake subdir tests
         if: ${{matrix.toolset == 'gcc-14' || matrix.toolset == 'clang-19'}}
         run: |
-          cd ../boost-root/
+          cd ../boost-root/libs/$LIBRARY
           cmake -S test/cmake_subdir_test -B __build \
             -GNinja \
             -DBUILD_TESTING=1 \
@@ -117,7 +117,7 @@ jobs:
           ctest --test-dir __build --output-on-failure --no-tests=error
           rm -rf __build
 
-      - name: Run CMake tests
+      - name: Run CMake root tests
         if: ${{matrix.toolset == 'gcc-14' || matrix.toolset == 'clang-19'}}
         run: |
           cd ../boost-root/
