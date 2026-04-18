@@ -48,7 +48,7 @@ target_link_libraries(boost_dll_boost_fs
     Boost::filesystem
 )
 
-# Detault library
+# Default library
 
 add_library(boost_dll INTERFACE)
 add_library(Boost::dll ALIAS boost_dll)
