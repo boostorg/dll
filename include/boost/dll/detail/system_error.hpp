@@ -26,7 +26,9 @@
 #   include <dlfcn.h>
 #endif
 
+#if !defined(BOOST_DLL_USE_STD_MODULE)
 #include <system_error>
+#endif // !defined(BOOST_DLL_USE_STD_MODULE)
 
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 

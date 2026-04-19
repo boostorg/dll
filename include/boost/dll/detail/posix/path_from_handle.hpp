@@ -26,7 +26,9 @@
 #if !defined(BOOST_DLL_INTERFACE_UNIT)
 #   include <mach-o/dyld.h>
 #   include <mach-o/nlist.h>
+#if !defined(BOOST_DLL_USE_STD_MODULE)
 #   include <cstddef> // for std::ptrdiff_t
+#endif // !defined(BOOST_DLL_USE_STD_MODULE)
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 namespace boost { namespace dll { namespace detail {

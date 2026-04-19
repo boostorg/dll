@@ -8,9 +8,11 @@
 #define BOOST_DLL_DETAIL_DEMANGLING_ITANIUM_HPP_
 
 #if !defined(BOOST_DLL_INTERFACE_UNIT)
+#if !defined(BOOST_DLL_USE_STD_MODULE)
 #include <algorithm>
 #include <iterator>
 #include <type_traits>
+#endif // !defined(BOOST_DLL_USE_STD_MODULE)
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 #include <boost/dll/detail/demangling/mangled_storage_base.hpp>

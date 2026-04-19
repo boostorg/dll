@@ -54,7 +54,18 @@ target_link_libraries(boost_dll_boost_fs
 if (BOOST_USE_MODULES)
   add_library(boost_dll)
   target_compile_definitions(boost_dll PUBLIC BOOST_USE_MODULES)
-  target_compile_features(boost_dll PUBLIC cxx_std_20)
+
+  get_property(__standard TARGET boost_dll PROPERTY CXX_STANDARD)
+  if (__standard IN_LIST CMAKE_CXX_COMPILER_IMPORT_STD AND CMAKE_CXX_MODULE_STD)
+    target_compile_features(boost_dll PUBLIC cxx_std_23)
+    target_compile_definitions(boost_dll PRIVATE BOOST_DLL_USE_STD_MODULE)
+    message(STATUS "Using `import std;`")
+  else()
+    target_compile_features(boost_dll PUBLIC cxx_std_20)
+    message(STATUS "`import std;` is not available")
+  endif()
+  unset(__standard)
+
   target_sources(boost_dll
     PUBLIC
       FILE_SET CXX_MODULES

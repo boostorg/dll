@@ -19,7 +19,9 @@
 
 #include <boost/winapi/dll.hpp>
 
+#if !defined(BOOST_DLL_USE_STD_MODULE)
 #include <utility>  // std::move
+#endif // !defined(BOOST_DLL_USE_STD_MODULE)
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 #include <boost/dll/shared_library_load_mode.hpp>
