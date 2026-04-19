@@ -9,10 +9,12 @@
 #define BOOST_DLL_SHARED_LIBRARY_IMPL_HPP
 
 #include <boost/dll/config.hpp>
-#include <boost/dll/shared_library_load_mode.hpp>
-#include <boost/dll/detail/posix/path_from_handle.hpp>
-#include <boost/dll/detail/posix/program_location_impl.hpp>
 
+#ifdef BOOST_HAS_PRAGMA_ONCE
+# pragma once
+#endif
+
+#if !defined(BOOST_DLL_INTERFACE_UNIT)
 #include <boost/core/invoke_swap.hpp>
 #include <boost/predef/os.h>
 
@@ -26,10 +28,11 @@
 // QNX's copy of <elf.h> and <link.h> reside in sys folder
 #   include <sys/link.h>
 #endif
+#endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
-#ifdef BOOST_HAS_PRAGMA_ONCE
-# pragma once
-#endif
+#include <boost/dll/shared_library_load_mode.hpp>
+#include <boost/dll/detail/posix/path_from_handle.hpp>
+#include <boost/dll/detail/posix/program_location_impl.hpp>
 
 namespace boost { namespace dll { namespace detail {
 
@@ -123,8 +126,8 @@ public:
                 return;
             }
             boost::dll::fs::error_code prog_loc_err;
-            boost::dll::fs::path loc = boost::dll::detail::program_location_impl(prog_loc_err);
-            if (boost::dll::fs::exists(actual_path) && !boost::dll::fs::equivalent(sl, loc, prog_loc_err)) {
+            boost::dll::fs::path l = boost::dll::detail::program_location_impl(prog_loc_err);
+            if (boost::dll::fs::exists(actual_path) && !boost::dll::fs::equivalent(sl, l, prog_loc_err)) {
                 // decorated path exists : current error is not a bad file descriptor and we are not trying to load the executable itself
                 ec = std::make_error_code(
                     std::errc::executable_format_error

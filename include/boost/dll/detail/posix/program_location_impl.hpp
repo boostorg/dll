@@ -9,17 +9,23 @@
 #define BOOST_DLL_DETAIL_POSIX_PROGRAM_LOCATION_IMPL_HPP
 
 #include <boost/dll/config.hpp>
-#include <boost/dll/detail/system_error.hpp>
-#include <boost/predef/os.h>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
 # pragma once
 #endif
 
+#if !defined(BOOST_DLL_INTERFACE_UNIT)
+#include <boost/predef/os.h>
+#endif // !defined(BOOST_DLL_INTERFACE_UNIT)
+
+#include <boost/dll/detail/system_error.hpp>
+
 #if BOOST_OS_MACOS || BOOST_OS_IOS
 
+#if !defined(BOOST_DLL_INTERFACE_UNIT)
 #include <string>
 #include <mach-o/dyld.h>
+#endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 namespace boost { namespace dll { namespace detail {
     inline boost::dll::fs::path program_location_impl(std::error_code &ec) {
@@ -44,7 +50,10 @@ namespace boost { namespace dll { namespace detail {
 
 #elif BOOST_OS_SOLARIS
 
+#if !defined(BOOST_DLL_INTERFACE_UNIT)
 #include <stdlib.h>
+#endif // !defined(BOOST_DLL_INTERFACE_UNIT)
+
 namespace boost { namespace dll { namespace detail {
     inline boost::dll::fs::path program_location_impl(std::error_code& ec) {
         ec.clear();
@@ -55,10 +64,12 @@ namespace boost { namespace dll { namespace detail {
 
 #elif BOOST_OS_BSD_FREE
 
+#if !defined(BOOST_DLL_INTERFACE_UNIT)
 #include <string>
 #include <sys/types.h>
 #include <sys/sysctl.h>
 #include <stdlib.h>
+#endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 namespace boost { namespace dll { namespace detail {
     inline boost::dll::fs::path program_location_impl(std::error_code& ec) {
@@ -121,8 +132,11 @@ namespace boost { namespace dll { namespace detail {
 
 #elif BOOST_OS_QNX
 
+#if !defined(BOOST_DLL_INTERFACE_UNIT)
 #include <fstream>
 #include <string> // for std::getline
+#endif // !defined(BOOST_DLL_INTERFACE_UNIT)
+
 namespace boost { namespace dll { namespace detail {
     inline boost::dll::fs::path program_location_impl(std::error_code &ec) {
         ec.clear();

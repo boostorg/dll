@@ -8,17 +8,20 @@
 #ifndef BOOST_DLL_SYSTEM_ERROR_HPP
 #define BOOST_DLL_SYSTEM_ERROR_HPP
 
+#ifdef BOOST_HAS_PRAGMA_ONCE
+#   pragma once
+#endif
+
 #include <boost/dll/config.hpp>
+
+#if !defined(BOOST_DLL_INTERFACE_UNIT)
 #include <boost/predef/os.h>
 #include <boost/throw_exception.hpp>
 
 #if !BOOST_OS_WINDOWS
 #   include <dlfcn.h>
 #endif
-
-#ifdef BOOST_HAS_PRAGMA_ONCE
-#   pragma once
-#endif
+#endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 namespace boost { namespace dll { namespace detail {
 

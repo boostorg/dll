@@ -5,23 +5,29 @@
 // (See accompanying file LICENSE_1_0.txt
 // or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+/// \file boost/dll/import.hpp
+/// \brief Contains all the boost::dll::import* reference counting
+/// functions that hold a shared pointer to the instance of
+/// boost::dll::shared_library.
+
 #ifndef BOOST_DLL_IMPORT_HPP
 #define BOOST_DLL_IMPORT_HPP
 
-#include <boost/dll/config.hpp>
-#include <boost/dll/shared_library.hpp>
+#include <boost/dll/detail/config.hpp>
 
-#include <memory>  // std::addressof
-#include <type_traits>
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_DLL_INTERFACE_UNIT)
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
 # pragma once
 #endif
 
-/// \file boost/dll/import.hpp
-/// \brief Contains all the boost::dll::import* reference counting
-/// functions that hold a shared pointer to the instance of
-/// boost::dll::shared_library.
+#if !defined(BOOST_DLL_INTERFACE_UNIT)
+#include <memory>  // std::addressof
+#include <type_traits>
+#endif // !defined(BOOST_DLL_INTERFACE_UNIT)
+
+#include <boost/dll/config.hpp>
+#include <boost/dll/shared_library.hpp>
 
 namespace boost { namespace dll {
 
@@ -67,6 +73,7 @@ namespace detail {
 #   define BOOST_DLL_IMPORT_RESULT_TYPE inline boost::dll::detail::import_type<T>
 #endif
 
+BOOST_DLL_BEGIN_MODULE_EXPORT
 
 /*!
 * Returns callable object or std::shared_ptr<T> (boost::shared_ptr<T> if
@@ -253,8 +260,11 @@ BOOST_DLL_IMPORT_RESULT_TYPE import_alias(shared_library&& lib, const std::strin
 
 #undef BOOST_DLL_IMPORT_RESULT_TYPE
 
+BOOST_DLL_END_MODULE_EXPORT
 
 }} // boost::dll
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_DLL_INTERFACE_UNIT)
 
 #endif // BOOST_DLL_IMPORT_HPP
 
