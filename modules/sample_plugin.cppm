@@ -12,5 +12,5 @@ module;
 export module sample_plugin;
 
 namespace my_namespace {
-    std::shared_ptr<my_plugin_api> create_plugin();
+    export std::shared_ptr<my_plugin_api> create_plugin();
 } // namespace my_namespace

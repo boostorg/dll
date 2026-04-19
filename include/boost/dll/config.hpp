@@ -53,11 +53,9 @@ using system_error = std::conditional_t<BOOST_DLL_USE_STD_FS, std::system_error,
 
 namespace boost { namespace dll { namespace fs {
 
-BOOST_DLL_BEGIN_MODULE_EXPORT
 using namespace std::filesystem;
 using std::error_code;
 using std::system_error;
-BOOST_DLL_END_MODULE_EXPORT
 
 }}}
 
@@ -70,7 +68,6 @@ BOOST_DLL_END_MODULE_EXPORT
 #include <boost/system/error_code.hpp>
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
-BOOST_DLL_BEGIN_MODULE_EXPORT
 namespace boost { namespace dll { namespace fs {
 
 using namespace boost::filesystem;
@@ -78,7 +75,6 @@ using boost::system::error_code;
 using boost::system::system_error;
 
 }}}
-BOOST_DLL_END_MODULE_EXPORT
 
 #endif // BOOST_DLL_USE_STD_FS
 
