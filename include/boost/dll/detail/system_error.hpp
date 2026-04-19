@@ -21,6 +21,9 @@
 #if !BOOST_OS_WINDOWS
 #   include <dlfcn.h>
 #endif
+
+#include <system_error>
+
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 namespace boost { namespace dll { namespace detail {
