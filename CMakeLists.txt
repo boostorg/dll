@@ -1,5 +1,6 @@
 # Copyright 2020 Peter Dimov
 # Copyright Antony Polukhin, 2021-2026
+# Copyright Fedor Osetrov, 2025-2026
 #
 # Distributed under the Boost Software License, Version 1.0.
 # https://www.boost.org/LICENSE_1_0.txt
