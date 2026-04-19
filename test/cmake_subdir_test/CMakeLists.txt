@@ -62,7 +62,7 @@ add_subdirectory(../.. boostorg/dll)
 
 if(BOOST_USE_MODULES)
   add_library(dll_sample_plugin_module SHARED)
-  target_link_libraries(dll_sample_plugin_module PUBLIC Boost::config)
+  target_link_libraries(dll_sample_plugin_module PRIVATE Boost::config)
   target_sources(dll_sample_plugin_module
     PUBLIC
       FILE_SET CXX_MODULES
