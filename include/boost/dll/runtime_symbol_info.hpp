@@ -13,10 +13,9 @@
 
 #include <boost/dll/detail/config.hpp>
 
-#include <boost/dll/config.hpp>
-#include <boost/dll/detail/system_error.hpp>
-
 #if !defined(BOOST_USE_MODULES) || defined(BOOST_DLL_INTERFACE_UNIT)
+
+#include <boost/dll/config.hpp>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
 # pragma once
@@ -236,6 +235,8 @@ BOOST_DLL_END_MODULE_EXPORT
 #endif // !defined(BOOST_USE_MODULES) || defined(BOOST_DLL_INTERFACE_UNIT)
 
 #if !defined(BOOST_DLL_INTERFACE_UNIT)
+
+#include <boost/dll/detail/system_error.hpp>
 
 namespace boost { namespace dll {
 
