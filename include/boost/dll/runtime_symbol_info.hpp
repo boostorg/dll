@@ -236,6 +236,7 @@ BOOST_DLL_END_MODULE_EXPORT
 
 #if !defined(BOOST_DLL_INTERFACE_UNIT)
 
+#include <boost/dll/config.hpp>
 #include <boost/dll/detail/system_error.hpp>
 
 namespace boost { namespace dll {
