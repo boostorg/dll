@@ -258,9 +258,9 @@ BOOST_DLL_IMPORT_RESULT_TYPE import_alias(shared_library&& lib, const std::strin
     return dll::import_alias<T>(std::move(lib), name.c_str());
 }
 
-#undef BOOST_DLL_IMPORT_RESULT_TYPE
-
 BOOST_DLL_END_MODULE_EXPORT
+
+#undef BOOST_DLL_IMPORT_RESULT_TYPE
 
 }} // boost::dll
 
