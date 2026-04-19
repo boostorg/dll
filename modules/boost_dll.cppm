@@ -1,7 +1,7 @@
 module;
 
 #include <boost/config.hpp>
-#include <boost/assert/source_location.hpp>
+#include <boost/assert.hpp>
 #include <boost/core/invoke_swap.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/predef/os.h>
@@ -40,5 +40,8 @@ export module boost.dll;
 #endif
 
 #include <boost/dll.hpp>
+
+// Experimental features
 #include <boost/dll/import_class.hpp>
 #include <boost/dll/import_mangled.hpp>
+#include <boost/dll/smart_library.hpp>
