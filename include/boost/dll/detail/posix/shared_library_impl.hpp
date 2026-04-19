@@ -126,8 +126,8 @@ public:
                 return;
             }
             boost::dll::fs::error_code prog_loc_err;
-            boost::dll::fs::path l = boost::dll::detail::program_location_impl(prog_loc_err);
-            if (boost::dll::fs::exists(actual_path) && !boost::dll::fs::equivalent(sl, l, prog_loc_err)) {
+            boost::dll::fs::path loc = boost::dll::detail::program_location_impl(prog_loc_err);
+            if (boost::dll::fs::exists(actual_path) && !boost::dll::fs::equivalent(sl, loc, prog_loc_err)) {
                 // decorated path exists : current error is not a bad file descriptor and we are not trying to load the executable itself
                 ec = std::make_error_code(
                     std::errc::executable_format_error
