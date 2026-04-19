@@ -115,7 +115,8 @@ jobs:
             -DBOOST_DLL_USE_STD_FS=1 \
             -DBOOST_USE_MODULES=1 \
             -DCMAKE_CXX_COMPILER=${{matrix.compiler}} \
-            -DCMAKE_CXX_FLAGS="-stdlib=libc++" 
+            -DCMAKE_CXX_FLAGS="-stdlib=libc++"  \
+            -DCMAKE_CXX_STANDARD=20
 
           cmake --build __build
           ctest --test-dir __build --output-on-failure --no-tests=error -VV
