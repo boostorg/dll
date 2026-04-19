@@ -7,7 +7,7 @@
 
 module;
 
-#include "../example/tutorial_common/my_plugin_api.hpp"
+#include <my_plugin_api.hpp>
 
 export module sample_plugin;
 

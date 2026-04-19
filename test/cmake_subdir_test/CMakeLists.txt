@@ -68,6 +68,10 @@ if(BOOST_USE_MODULES)
       FILE_SET CXX_MODULES
       BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../../modules
       FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../modules/sample_plugin.cppm
+    PUBLIC
+      FILE_SET HEADERS
+      BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../../example/tutorial_common
+      FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../example/tutorial_common/my_plugin_api.hpp
     PRIVATE
       ${CMAKE_CURRENT_SOURCE_DIR}/../../modules/sample_plugin.cpp
   )

@@ -10,7 +10,7 @@ module;
 #include <iostream>
 #include <string>
 
-#include "../example/tutorial_common/my_plugin_api.hpp"
+#include <my_plugin_api.hpp>
 
 module sample_plugin;
 
