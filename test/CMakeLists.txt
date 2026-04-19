@@ -83,6 +83,7 @@ boost_dll_add_test(dll_example_getting_started ../example/getting_started.cpp #[
 
 boost_dll_add_test(dll_example_tutorial1_std_shared_ptr ../example/tutorial1/tutorial1.cpp #[[export_symbols=]] FALSE dll_my_plugin_sum)
 boost_dll_add_test(dll_example_tutorial1_boost_shared_ptr ../example/tutorial1/tutorial1.cpp #[[export_symbols=]] FALSE dll_my_plugin_sum)
+target_compile_definitions(dll_example_tutorial1_boost_shared_ptr PRIVATE BOOST_DLL_USE_BOOST_SHARED_PTR)
 
 boost_dll_add_test(dll_example_tutorial2 ../example/tutorial2/tutorial2.cpp #[[export_symbols=]] FALSE dll_my_plugin_aggregator)
 
