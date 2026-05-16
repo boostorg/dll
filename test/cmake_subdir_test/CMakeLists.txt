@@ -38,7 +38,6 @@ type_traits
 utility
 io
 typeof
-functional
 function
 bind
 filesystem
