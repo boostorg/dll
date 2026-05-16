@@ -34,9 +34,11 @@ module;
 
 #ifndef BOOST_DLL_USE_STD_MODULE
 #include <algorithm>
+#include <type_traits>
 #include <map>
 #include <memory>
 #include <fstream>
+#include <vector>
 #endif
 
 #ifndef _MSC_VER

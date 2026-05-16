@@ -9,6 +9,7 @@ module;
 
 #include <iostream>
 #include <string>
+#include <memory>
 
 #include <my_plugin_api.hpp>
 
