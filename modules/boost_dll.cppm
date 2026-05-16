@@ -30,9 +30,12 @@ module;
 #   include <link.h>
 #endif
 
+#include <algorithm>
+#include <type_traits>
 #include <map>
 #include <memory>
 #include <fstream>
+#include <vector>
 
 #ifndef _MSC_VER
 #include <boost/core/demangle.hpp>
