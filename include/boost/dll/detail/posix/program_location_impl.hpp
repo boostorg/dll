@@ -53,9 +53,17 @@ namespace boost { namespace dll { namespace detail {
 #elif BOOST_OS_SOLARIS
 
 #if !defined(BOOST_DLL_INTERFACE_UNIT)
+<<<<<<< HEAD
 #if !defined(BOOST_DLL_USE_STD_MODULE)
+||||||| 079d73e
+=======
+>>>>>>> 62f854993375e5f39f32851c5f8ad307b96a3733
 #include <stdlib.h>
+<<<<<<< HEAD
 #endif // !defined(BOOST_DLL_USE_STD_MODULE)
+||||||| 079d73e
+=======
+>>>>>>> 62f854993375e5f39f32851c5f8ad307b96a3733
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 namespace boost { namespace dll { namespace detail {
@@ -69,12 +77,22 @@ namespace boost { namespace dll { namespace detail {
 #elif BOOST_OS_BSD_FREE
 
 #if !defined(BOOST_DLL_INTERFACE_UNIT)
+<<<<<<< HEAD
 #if !defined(BOOST_DLL_USE_STD_MODULE)
+||||||| 079d73e
+=======
+>>>>>>> 62f854993375e5f39f32851c5f8ad307b96a3733
 #include <string>
 #include <stdlib.h>
 #endif // !defined(BOOST_DLL_USE_STD_MODULE)
 #include <sys/types.h>
 #include <sys/sysctl.h>
+<<<<<<< HEAD
+||||||| 079d73e
+#include <stdlib.h>
+=======
+#include <stdlib.h>
+>>>>>>> 62f854993375e5f39f32851c5f8ad307b96a3733
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 namespace boost { namespace dll { namespace detail {
@@ -139,10 +157,18 @@ namespace boost { namespace dll { namespace detail {
 #elif BOOST_OS_QNX
 
 #if !defined(BOOST_DLL_INTERFACE_UNIT)
+<<<<<<< HEAD
 #if !defined(BOOST_DLL_USE_STD_MODULE)
+||||||| 079d73e
+=======
+>>>>>>> 62f854993375e5f39f32851c5f8ad307b96a3733
 #include <fstream>
 #include <string> // for std::getline
+<<<<<<< HEAD
 #endif // !defined(BOOST_DLL_USE_STD_MODULE)
+||||||| 079d73e
+=======
+>>>>>>> 62f854993375e5f39f32851c5f8ad307b96a3733
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 namespace boost { namespace dll { namespace detail {
