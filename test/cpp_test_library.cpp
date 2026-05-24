@@ -9,6 +9,9 @@
 
 #include <boost/config.hpp>
 
+#ifdef BOOST_USE_MODULES
+#include <compare>
+#endif
 #include <boost/variant.hpp>
 
 BOOST_SYMBOL_EXPORT extern int unscoped_var;

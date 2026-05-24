@@ -8,7 +8,17 @@
 #ifndef BOOST_DLL_SYSTEM_ERROR_HPP
 #define BOOST_DLL_SYSTEM_ERROR_HPP
 
+#include <boost/dll/detail/config.hpp>
+
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_DLL_INTERFACE_UNIT)
+
+#ifdef BOOST_HAS_PRAGMA_ONCE
+#   pragma once
+#endif
+
 #include <boost/dll/config.hpp>
+
+#if !defined(BOOST_DLL_INTERFACE_UNIT)
 #include <boost/predef/os.h>
 #include <boost/throw_exception.hpp>
 
@@ -16,9 +26,11 @@
 #   include <dlfcn.h>
 #endif
 
-#ifdef BOOST_HAS_PRAGMA_ONCE
-#   pragma once
-#endif
+#include <system_error>
+
+#endif // !defined(BOOST_DLL_INTERFACE_UNIT)
+
+BOOST_DLL_BEGIN_MODULE_EXPORT
 
 namespace boost { namespace dll { namespace detail {
 
@@ -50,6 +62,10 @@ namespace boost { namespace dll { namespace detail {
     }
 
 }}} // boost::dll::detail
+
+BOOST_DLL_END_MODULE_EXPORT
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_DLL_INTERFACE_UNIT)
 
 #endif // BOOST_DLL_SYSTEM_ERROR_HPP
 

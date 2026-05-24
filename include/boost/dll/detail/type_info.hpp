@@ -9,12 +9,16 @@
 #ifndef BOOST_DLL_DETAIL_TYPE_INFO_HPP_
 #define BOOST_DLL_DETAIL_TYPE_INFO_HPP_
 
+#include <boost/dll/config.hpp>
+
+#if !defined(BOOST_DLL_INTERFACE_UNIT)
+# if defined(_MSC_VER) // MSVC, Clang-cl, and ICC on Windows
+#  include <boost/winapi/basic_types.hpp>
+# endif
+
 #include <typeinfo>
 #include <cstring>
-#include <boost/dll/config.hpp>
-#if defined(_MSC_VER) // MSVC, Clang-cl, and ICC on Windows
-#include <boost/winapi/basic_types.hpp>
-#endif
+#endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 namespace boost { namespace dll { namespace detail {
 
