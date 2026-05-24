@@ -29,8 +29,10 @@
 #include <boost/predef/architecture.h>
 #include <boost/throw_exception.hpp>
 
+#if !defined(BOOST_DLL_USE_STD_MODULE)
 #include <fstream>
 #include <type_traits>
+#endif // !defined(BOOST_DLL_USE_STD_MODULE)
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 #include <boost/dll/detail/pe_info.hpp>

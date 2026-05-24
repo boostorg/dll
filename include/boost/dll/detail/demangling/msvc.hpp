@@ -10,9 +10,11 @@
 #if !defined(BOOST_DLL_INTERFACE_UNIT)
 #include <boost/core/detail/string_view.hpp>
 
+#if !defined(BOOST_DLL_USE_STD_MODULE)
 #include <iterator>
 #include <algorithm>
 #include <type_traits>
+#endif // !defined(BOOST_DLL_USE_STD_MODULE)
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 #include <boost/dll/detail/demangling/mangled_storage_base.hpp>

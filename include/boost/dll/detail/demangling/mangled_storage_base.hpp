@@ -10,10 +10,12 @@
 #if !defined(BOOST_DLL_INTERFACE_UNIT)
 #include <boost/type_index/ctti_type_index.hpp>
 
+#if !defined(BOOST_DLL_USE_STD_MODULE)
 #include <vector>
 #include <string>
 #include <map>
 #include <type_traits>
+#endif // !defined(BOOST_DLL_USE_STD_MODULE)
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 #include <boost/dll/detail/demangling/demangle_symbol.hpp>

@@ -23,7 +23,9 @@
 #if BOOST_OS_MACOS || BOOST_OS_IOS
 
 #if !defined(BOOST_DLL_INTERFACE_UNIT)
+#if !defined(BOOST_DLL_USE_STD_MODULE)
 #include <string>
+#endif // !defined(BOOST_DLL_USE_STD_MODULE)
 #include <mach-o/dyld.h>
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
@@ -51,7 +53,9 @@ namespace boost { namespace dll { namespace detail {
 #elif BOOST_OS_SOLARIS
 
 #if !defined(BOOST_DLL_INTERFACE_UNIT)
+#if !defined(BOOST_DLL_USE_STD_MODULE)
 #include <stdlib.h>
+#endif // !defined(BOOST_DLL_USE_STD_MODULE)
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 namespace boost { namespace dll { namespace detail {
@@ -65,10 +69,12 @@ namespace boost { namespace dll { namespace detail {
 #elif BOOST_OS_BSD_FREE
 
 #if !defined(BOOST_DLL_INTERFACE_UNIT)
+#if !defined(BOOST_DLL_USE_STD_MODULE)
 #include <string>
+#include <stdlib.h>
+#endif // !defined(BOOST_DLL_USE_STD_MODULE)
 #include <sys/types.h>
 #include <sys/sysctl.h>
-#include <stdlib.h>
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 namespace boost { namespace dll { namespace detail {
@@ -133,8 +139,10 @@ namespace boost { namespace dll { namespace detail {
 #elif BOOST_OS_QNX
 
 #if !defined(BOOST_DLL_INTERFACE_UNIT)
+#if !defined(BOOST_DLL_USE_STD_MODULE)
 #include <fstream>
 #include <string> // for std::getline
+#endif // !defined(BOOST_DLL_USE_STD_MODULE)
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 namespace boost { namespace dll { namespace detail {

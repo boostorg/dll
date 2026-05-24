@@ -28,11 +28,12 @@
 #endif
 
 #if !defined(BOOST_DLL_INTERFACE_UNIT)
+#if !defined(BOOST_DLL_USE_STD_MODULE)
 #include <memory>  // std::addressof
 #include <type_traits>
+#endif // !defined(BOOST_DLL_USE_STD_MODULE)
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
-#include <boost/dll/config.hpp>
 #include <boost/dll/smart_library.hpp>
 #include <boost/dll/detail/import_mangled_helpers.hpp>
 

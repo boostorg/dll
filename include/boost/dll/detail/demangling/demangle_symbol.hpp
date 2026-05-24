@@ -11,9 +11,11 @@
 #include <boost/dll/config.hpp>
 
 #if !defined(BOOST_DLL_INTERFACE_UNIT)
+#if !defined(BOOST_DLL_USE_STD_MODULE)
 #include <string>
 #include <algorithm>
 #include <memory>
+#endif // !defined(BOOST_DLL_USE_STD_MODULE)
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 #if defined(_MSC_VER) // MSVC, Clang-cl, and ICC on Windows

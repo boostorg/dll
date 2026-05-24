@@ -7,6 +7,8 @@
 
 module;
 
+#include <memory>
+
 #include <my_plugin_api.hpp>
 
 export module sample_plugin;

@@ -25,8 +25,10 @@
 #include <boost/dll/config.hpp>
 
 #if !defined(BOOST_DLL_INTERFACE_UNIT)
+#if !defined(BOOST_DLL_USE_STD_MODULE)
 #include <type_traits>
 #include <utility>  // std::move
+#endif // !defined(BOOST_DLL_USE_STD_MODULE)
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 #if (__cplusplus < 201103L) && (!defined(_MSVC_LANG) || _MSVC_LANG < 201103L)

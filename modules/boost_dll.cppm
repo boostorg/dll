@@ -16,8 +16,10 @@ module;
 #include <boost/type_index/ctti_type_index.hpp>
 
 #ifdef BOOST_DLL_USE_STD_FS
+# ifndef BOOST_DLL_USE_STD_MODULE
 #   include <filesystem>
 #   include <system_error>
+# endif
 #else
 #   include <boost/filesystem/path.hpp>
 #   include <boost/filesystem/operations.hpp>
@@ -30,12 +32,14 @@ module;
 #   include <link.h>
 #endif
 
+#ifndef BOOST_DLL_USE_STD_MODULE
 #include <algorithm>
 #include <type_traits>
 #include <map>
 #include <memory>
 #include <fstream>
 #include <vector>
+#endif
 
 #ifndef _MSC_VER
 #include <boost/core/demangle.hpp>
@@ -44,6 +48,10 @@ module;
 #define BOOST_DLL_INTERFACE_UNIT
 
 export module boost.dll;
+
+#ifdef BOOST_DLL_USE_STD_MODULE
+import std;
+#endif
 
 #ifdef __clang__
 #   pragma clang diagnostic ignored "-Winclude-angled-in-module-purview"

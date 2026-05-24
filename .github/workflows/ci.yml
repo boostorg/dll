@@ -105,6 +105,25 @@ jobs:
           ./b2 -d0 headers
           ./b2 -j4 variant=debug tools/inspect
 
+      - name: Run modules tests
+        if: ${{matrix.toolset == 'clang-19'}}
+        run: |
+          cd ../boost-root/libs/$LIBRARY
+          cmake -S test/cmake_subdir_test -B __build \
+            -GNinja \
+            -DBUILD_TESTING=1 \
+            -DBOOST_DLL_USE_STD_FS=1 \
+            -DBOOST_USE_MODULES=1 \
+            -DCMAKE_CXX_COMPILER=${{matrix.compiler}} \
+            -DCMAKE_CXX_FLAGS="-stdlib=libc++"  \
+            -DCMAKE_CXX_STANDARD=23 \
+            -DCMAKE_CXX_MODULE_STD=ON \
+            -DCMAKE_EXPERIMENTAL_CXX_IMPORT_STD=0e5b6991-d74f-4b3d-a41c-cf096e0b2508
+
+          cmake --build __build
+          ctest --test-dir __build --output-on-failure --no-tests=error -VV
+          rm -rf __build
+
       - name: Run modules tests without 'import std;'
         if: ${{matrix.toolset == 'clang-19'}}
         run: |

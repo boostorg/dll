@@ -27,8 +27,10 @@
 #include <boost/core/enable_if.hpp>
 #include <boost/core/explicit_operator_bool.hpp>
 
+#if !defined(BOOST_DLL_USE_STD_MODULE)
 #include <type_traits>
 #include <utility>  // std::move
+#endif // !defined(BOOST_DLL_USE_STD_MODULE)
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 #include <boost/dll/detail/system_error.hpp>

@@ -25,7 +25,9 @@
 #include <boost/predef/os.h>
 #include <boost/predef/compiler/visualc.h>
 
+#if !defined(BOOST_DLL_USE_STD_MODULE)
 #include <memory>  // std::addressof
+#endif // !defined(BOOST_DLL_USE_STD_MODULE)
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 #if BOOST_OS_WINDOWS

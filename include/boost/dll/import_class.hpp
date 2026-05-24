@@ -23,8 +23,10 @@
 #endif
 
 #if !defined(BOOST_DLL_INTERFACE_UNIT)
+#if !defined(BOOST_DLL_USE_STD_MODULE)
 #include <memory>
 #include <utility>  // std::move
+#endif // !defined(BOOST_DLL_USE_STD_MODULE)
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 #include <boost/dll/smart_library.hpp>

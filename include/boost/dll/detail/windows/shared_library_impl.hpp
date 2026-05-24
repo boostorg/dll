@@ -10,16 +10,19 @@
 
 #include <boost/dll/config.hpp>
 
-#ifdef BOOST_HAS_PRAGMA_ONCE
-# pragma once
-#endif
+#include <boost/dll/shared_library_load_mode.hpp>
+#include <boost/dll/detail/aggressive_ptr_cast.hpp>
+#include <boost/dll/detail/system_error.hpp>
+#include <boost/dll/detail/windows/path_from_handle.hpp>
 
 #if !defined(BOOST_DLL_INTERFACE_UNIT)
 #include <boost/core/invoke_swap.hpp>
 
 #include <boost/winapi/dll.hpp>
 
+#if !defined(BOOST_DLL_USE_STD_MODULE)
 #include <utility>  // std::move
+#endif // !defined(BOOST_DLL_USE_STD_MODULE)
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 #include <boost/dll/shared_library_load_mode.hpp>

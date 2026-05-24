@@ -17,10 +17,12 @@
 #if !defined(BOOST_DLL_INTERFACE_UNIT)
 #include <boost/throw_exception.hpp>
 
+#if !defined(BOOST_DLL_USE_STD_MODULE)
 #include <cstdint>
 #include <cstring>
 #include <fstream>
 #include <vector>
+#endif // !defined(BOOST_DLL_USE_STD_MODULE)
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 namespace boost { namespace dll { namespace detail {

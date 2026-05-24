@@ -47,8 +47,10 @@ using system_error = std::conditional_t<BOOST_DLL_USE_STD_FS, std::system_error,
 #ifdef BOOST_DLL_USE_STD_FS
 
 #if !defined(BOOST_DLL_INTERFACE_UNIT)
+#if !defined(BOOST_DLL_USE_STD_MODULE)
 #include <filesystem>
 #include <system_error>
+#endif // !defined(BOOST_DLL_USE_STD_MODULE)
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 namespace boost { namespace dll { namespace fs {
@@ -94,7 +96,9 @@ namespace boost { namespace dll { namespace detail {
 #else  // BOOST_DLL_USE_STD_FS
 
 #if !defined(BOOST_DLL_INTERFACE_UNIT)
+#if !defined(BOOST_DLL_USE_STD_MODULE)
 #include <memory>
+#endif // !defined(BOOST_DLL_USE_STD_MODULE)
 #endif // !defined(BOOST_DLL_INTERFACE_UNIT)
 
 namespace boost { namespace dll { namespace detail {

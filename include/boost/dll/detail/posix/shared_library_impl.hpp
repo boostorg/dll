@@ -18,10 +18,12 @@
 #include <boost/core/invoke_swap.hpp>
 #include <boost/predef/os.h>
 
+#if !defined(BOOST_DLL_USE_STD_MODULE)
 #include <utility>  // std::move
+#include <cstring> // strncmp
+#endif // !defined(BOOST_DLL_USE_STD_MODULE)
 
 #include <dlfcn.h>
-#include <cstring> // strncmp
 #if !BOOST_OS_MACOS && !BOOST_OS_IOS && !BOOST_OS_QNX && !BOOST_OS_CYGWIN
 #   include <link.h>
 #elif BOOST_OS_QNX
