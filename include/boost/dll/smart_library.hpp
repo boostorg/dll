@@ -151,23 +151,26 @@ public:
       *
       * \throw Nothing.
       */
-      explicit smart_library(const shared_library & lib) noexcept
-          : lib_(lib)
-      {
-          storage_.load(lib.location());
-      }
-     /*!
-     * Construct from a shared_library object.
-     *
-     * \param lib A shared_library to move from.
-     *
-     * \throw Nothing.
-     */
-     explicit smart_library(shared_library&& lib) noexcept
-         : lib_(std::move(lib))
-     {
-         storage_.load(lib.location());
-     }
+    explicit smart_library(const shared_library & lib) noexcept
+        : lib_(lib) {
+        if (lib_.is_loaded()) {
+            storage_.load(lib_.location());
+        }
+    }
+    /*!
+    * Construct from a shared_library object.
+    *
+    * \param lib A shared_library to move from.
+    *
+    * \throw Nothing.
+    */
+    explicit smart_library(shared_library&& lib) noexcept
+        : lib_(std::move(lib))
+    {
+        if (lib_.is_loaded()) {
+            storage_.load(lib_.location());
+        }
+    }
 
     /*!
     * Destroys the smart_library.
