@@ -116,6 +116,7 @@ boost_dll_add_test(dll_test_cpp_mangle cpp_mangle_test.cpp #[[export_symbols=]] 
 target_link_libraries(dll_test_cpp_mangle PRIVATE Boost::variant)
 boost_dll_add_test(dll_test_cpp_load cpp_load_test.cpp #[[export_symbols=]] FALSE dll_cpp_plugin)
 target_link_libraries(dll_test_cpp_load PRIVATE Boost::variant)
+boost_dll_add_test(dll_test_smart_library smart_library_test.cpp #[[export_symbols=]] FALSE dll_cpp_plugin)
 boost_dll_add_test(dll_test_cpp_import cpp_import_test.cpp #[[export_symbols=]] FALSE dll_cpp_plugin)
 target_link_libraries(dll_test_cpp_import PRIVATE Boost::variant)
 if(LINUX)
